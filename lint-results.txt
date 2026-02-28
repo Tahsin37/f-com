@@ -1,0 +1,104 @@
+[0m[0m
+[0m[4mD:\fmanager\src\app\api\courier\book\route.ts[24m[0m
+[0m   [2m6:35[22m  [33mwarning[39m  'pickupAddress' is assigned a value but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m6:50[22m  [33mwarning[39m  'weightEstimate' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m24:14[22m  [33mwarning[39m  'error' is defined but never used                    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\app\api\orders\route.ts[24m[0m
+[0m   [2m6:17[22m  [33mwarning[39m  'sellerId' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m6:44[22m  [33mwarning[39m  'payment' is assigned a value but never used   [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m24:14[22m  [33mwarning[39m  'error' is defined but never used              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\app\api\orders\verify-otp\route.ts[24m[0m
+[0m  [2m22:14[22m  [33mwarning[39m  'error' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\app\checkout\page.tsx[24m[0m
+[0m  [2m37:46[22m  [31merror[39m  Error: Cannot call impure function during render[0m
+[0m[0m
+[0m`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).[0m
+[0m[0m
+[0mD:\fmanager\src\app\checkout\page.tsx:37:46[0m
+[0m  35 |     const deliveryCharge = DELIVERY_CHARGE[area][0m
+[0m  36 |     const grandTotal = totalPrice + deliveryCharge[0m
+[0m> 37 |     const orderId = `FM-${Math.floor(10000 + Math.random() * 90000)}`[0m
+[0m     |                                              ^^^^^^^^^^^^^ Cannot call impure function[0m
+[0m  38 |[0m
+[0m  39 |     // Step Progress[0m
+[0m  40 |     const steps: { key: CheckoutStep; label: string }[] = [  [2mreact-hooks/purity[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\app\components\page.tsx[24m[0m
+[0m  [2m13:10[22m  [33mwarning[39m  'StickyCartBar' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\app\dashboard\layout.tsx[24m[0m
+[0m  [2m6:27[22m  [33mwarning[39m  'Package' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\app\dashboard\quick-sell\page.tsx[24m[0m
+[0m  [2m66:50[22m  [31merror[39m  Error: Cannot call impure function during render[0m
+[0m[0m
+[0m`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).[0m
+[0m[0m
+[0mD:\fmanager\src\app\dashboard\quick-sell\page.tsx:66:50[0m
+[0m  64 |             return[0m
+[0m  65 |         }[0m
+[0m> 66 |         const saleId = `POS-${Math.floor(10000 + Math.random() * 90000)}`[0m
+[0m     |                                                  ^^^^^^^^^^^^^ Cannot call impure function[0m
+[0m  67 |         setLastSaleId(saleId)[0m
+[0m  68 |         setCompleted(true)[0m
+[0m  69 |         toast.success("Sale completed!", { description: `Sale ID: ${saleId} — ৳${posTotal.toLocaleString()}` })  [2mreact-hooks/purity[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\app\page.tsx[24m[0m
+[0m  [2m6:10[22m  [33mwarning[39m  'TrustSection' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\components\f-manager\OTPInput.tsx[24m[0m
+[0m  [2m51:13[22m  [31merror[39m  'interval' is never reassigned. Use 'const' instead  [2mprefer-const[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\components\f-manager\ProductCard.tsx[24m[0m
+[0m  [2m33:25[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\components\f-manager\ProductDrawer.tsx[24m[0m
+[0m  [2m11:41[22m  [33mwarning[39m  'ChevronLeft' is defined but never used                                                                                                                                                                                                                                                  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m11:54[22m  [33mwarning[39m  'ChevronRight' is defined but never used                                                                                                                                                                                                                                                 [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m51:29[22m  [33mwarning[39m  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  [2m@next/next/no-img-element[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\components\f-manager\TestimonialSection.tsx[24m[0m
+[0m  [2m5:47[22m  [33mwarning[39m  'ShieldCheck' is defined but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\lib\CartContext.tsx[24m[0m
+[0m  [2m26:17[22m  [31merror[39m  Error: Calling setState synchronously within an effect can trigger cascading renders[0m
+[0m[0m
+[0mEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:[0m
+[0m* Update external systems with the latest state from React.[0m
+[0m* Subscribe for updates from some external system, calling setState in a callback function when external state changes.[0m
+[0m[0m
+[0mCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).[0m
+[0m[0m
+[0mD:\fmanager\src\lib\CartContext.tsx:26:17[0m
+[0m  24 |             const stored = localStorage.getItem("fmanager_cart")[0m
+[0m  25 |             if (stored) {[0m
+[0m> 26 |                 setCart(JSON.parse(stored))[0m
+[0m     |                 ^^^^^^^ Avoid calling setState() directly within an effect[0m
+[0m  27 |             }[0m
+[0m  28 |         } catch (e) {[0m
+[0m  29 |             console.warn("Could not load cart from localStorage", e)  [2mreact-hooks/set-state-in-effect[22m[0m
+[0m[0m
+[0m[4mD:\fmanager\src\lib\i18n.tsx[24m[0m
+[0m  [2m29:13[22m  [31merror[39m  Error: Calling setState synchronously within an effect can trigger cascading renders[0m
+[0m[0m
+[0mEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:[0m
+[0m* Update external systems with the latest state from React.[0m
+[0m* Subscribe for updates from some external system, calling setState in a callback function when external state changes.[0m
+[0m[0m
+[0mCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).[0m
+[0m[0m
+[0mD:\fmanager\src\lib\i18n.tsx:29:13[0m
+[0m  27 |         const stored = localStorage.getItem("fmanager_locale") as Locale[0m
+[0m  28 |         if (stored && (stored === "en" || stored === "bn")) {[0m
+[0m> 29 |             setLocaleState(stored)[0m
+[0m     |             ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect[0m
+[0m  30 |         }[0m
+[0m  31 |     }, [])[0m
+[0m  32 |  [2mreact-hooks/set-state-in-effect[22m[0m
+[0m[0m
+[0m[31m[1m✖ 20 problems (5 errors, 15 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[31m[1m  1 error and 0 warnings potentially fixable with the `--fix` option.[22m[39m[0m
+[0m[31m[1m[22m[39m[0m

@@ -1,0 +1,46 @@
+﻿Γû▓ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 4.1s
+  Running TypeScript ...
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\Tahsin\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified 
+   : (Failed to compile.:String) [], Remo  
+  teException
+    + FullyQualifiedErrorId : NativeComman 
+   dError
+ 
+
+./src/app/components/page.tsx:143:29
+Type error: Property 'images' is missing 
+in type '{ id: string; name: string; 
+price: number; originalPrice: number; 
+image: string; inStock: boolean; variants: 
+string[]; }' but required in type 
+'Product'.
+
+[0m [90m 141 |[39m                     
+[33m<[39m[33mdiv[39m 
+className[33m=[39m[32m"w-full 
+max-w-sm"[39m[33m>[39m
+ [90m 142 |[39m                         
+[33m<[39m[33mProductCard[39m
+[31m[1m>[22m[39m[90m 143 |[39m       
+                      
+product[33m=[39m{mockProduct}
+ [90m     |[39m                          
+   [31m[1m^[22m[39m
+ [90m 144 |[39m                          
+   onQuickView[33m=[39m{() [33m=>[39m 
+setDrawerOpen([36mtrue[39m)}
+ [90m 145 |[39m                         
+[33m/[39m[33m>[39m
+ [90m 146 |[39m                         
+{drawerOpen [33m&&[39m ([0m
+Next.js build worker exited with code: 1 
+and signal: null

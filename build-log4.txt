@@ -1,0 +1,89 @@
+﻿Γû▓ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+node.exe : Error: Cannot apply unknown 
+utility class 
+`dark:hover:shadow-[0_15px_40px_rgba(0,`
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\Tahsin\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpeci    
+fied: (Error: Cannot a...x_40px_rg    
+ba(0,`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCo    
+mmandError
+ 
+    [2m[at onInvalidCandidate (D:\fmanager
+\node_modules\tailwindcss\dist\lib.js:21:15
+11)][0m
+    [2m[at Ee (D:\fmanager\node_modules\ta
+ilwindcss\dist\lib.js:16:36740)][0m
+    [2m[at D:\fmanager\node_modules\tailwi
+ndcss\dist\lib.js:21:355][0m
+    [2m[at Pr (D:\fmanager\node_modules\ta
+ilwindcss\dist\lib.js:3:1733)][0m
+    [2m[at _ (D:\fmanager\node_modules\tai
+lwindcss\dist\lib.js:3:1377)][0m
+    [2m[at Te (D:\fmanager\node_modules\ta
+ilwindcss\dist\lib.js:21:172)][0m
+    [2m[at pn (D:\fmanager\node_modules\ta
+ilwindcss\dist\lib.js:38:294)][0m
+    [2m[at async dn (D:\fmanager\node_modu
+les\tailwindcss\dist\lib.js:38:631)][0m
+    [2m[at async Xr (D:\fmanager\node_modu
+les\@tailwindcss\node\dist\index.js:10:3417
+)][0m
+    [2m[at async N (D:\fmanager\node_modul
+es\@tailwindcss\postcss\dist\index.js:10:39
+79)][0m
+
+> Build error occurred
+Error: Turbopack build failed with 1 
+errors:
+./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: tailwindcss: 
+D:\fmanager\src\app\globals.css:1:1: 
+Cannot apply unknown utility class 
+`dark:hover:shadow-[0_15px_40px_rgba(0,`
+    at Input.error 
+(node_modules/postcss/lib/input.js:135:16) 
+[D:\fmanager\.next\build\chunks\node_module
+s_fe693df6._.js:4651:22]
+    at Root.error 
+(node_modules/postcss/lib/node.js:146:32) [
+D:\fmanager\.next\build\chunks\node_modules
+_fe693df6._.js:928:38]
+    [at Object.Once (D:\fmanager\node_modul
+es\@tailwindcss\postcss\dist\index.js:10:69
+13)]
+    at async LazyResult.runAsync (node_modu
+les/postcss/lib/lazy-result.js:293:11) [D:\
+fmanager\.next\build\chunks\node_modules_fe
+693df6._.js:6206:21]
+    at async transform (turbopack:///[turbo
+pack-node]/transforms/postcss.ts:70:34) [D:
+\fmanager\.next\build\chunks\[root-of-the-s
+erver]__51225daf._.js:146:36]
+    at async run (turbopack:///[turbopack-n
+ode]/ipc/evaluate.ts:92:23) [D:\fmanager\.n
+ext\build\chunks\[root-of-the-server]__9749
+41ed._.js:443:31]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client 
+Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+    at async transform (turbopack:///[turbo
+pack-node]/transforms/postcss.ts:70:34) [D:
+\fmanager\.next\build\chunks\[root-of-the-s
+erver]__51225daf._.js:146:36])
+    at async run (turbopack:///[turbopack-n
+ode]/ipc/evaluate.ts:92:23) [D:\fmanager\.n
+ext\build\chunks\[root-of-the-server]__9749
+41ed._.js:443:31])

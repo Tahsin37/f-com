@@ -1,0 +1,200 @@
+
+
+
+📄 PROJECT F-MANAGER: PRODUCT REQUIREMENTS DOCUMENT (PRD)
+Project Name: F-Manager (by Team Sifr)
+Project Type: B2B2C F-Commerce SaaS (Software as a Service)
+Target Audience: Facebook & Instagram Sellers in Bangladesh.
+Current Phase: Phase 1 - Customer Storefront Demo (MVP)
+
+🎯 1. Executive Summary (প্রজেক্টের মূল ভিশন)
+F-Manager হলো বাংলাদেশের এফ-কমার্স (F-commerce) ব্যবসায়ীদের জন্য একটি "All-in-One Automated Sales & Logistics Platform"।
+এটি সেলারদের মেসেঞ্জারে ম্যানুয়াল অর্ডার নেওয়ার ঝামেলা, খাতা-কলমে হিসাব রাখা এবং কুরিয়ারে ম্যানুয়াল বুকিং দেওয়ার ৪-৫ ঘণ্টার সময়সাপেক্ষ কাজকে মাত্র ১ ক্লিকে এবং ৫ মিনিটে নামিয়ে আনবে।
+
+💎 2. Unique Value Proposition (কেন মানুষ ব্যবহার করবে?)
+Frictionless One-Page Checkout: কাস্টমাররা কোনো অ্যাকাউন্ট না খুলেই মাত্র ৩টি ফিল্ড (নাম, ফোন, ঠিকানা) পূরণ করে অর্ডার করতে পারবে।
+RuxSpeed Payment Integration: কোনো ট্রেড লাইসেন্স ছাড়া bKash, Nagad, Card বা Crypto দিয়ে পেমেন্ট রিসিভ এবং অটো-ভেরিফাই করার সুবিধা।
+1-Click Courier Booking: Steadfast বা Pathao API ইন্টিগ্রেশন থাকায় ড্যাশবোর্ড থেকে ১ ক্লিকে পার্সেল বুকিং।
+Zero Technical Hassle: সেলারদের কোনো ডোমেইন বা হোস্টিং কিনতে হবে না। তারা সাব-ডোমেইনে (যেমন: shop.sifr.com/seller-name) রেডিমেড ওয়েবসাইট পাবে।
+
+🏗️ 3. Technical Architecture (সিস্টেম কীভাবে কাজ করবে)
+সিস্টেমটি দুটি প্রধান মডিউলে বিভক্ত। (বর্তমান ফোকাস: Part A)
+🛒 Part A: Customer Panel (Storefront / Demo Phase)
+এটি কাস্টমারদের ইন্টারফেস, যা দিয়ে আমরা সেলারদের ডেমো দেখাব।
+Product Showcase: প্রোডাক্টের ছবি, দাম (ডিসকাউন্ট সহ), এবং সাইজ/কালার সিলেক্টর (Variant Logic)।
+Mobile-First Design: নিচে "Add to Cart" এবং "Order Now" স্টিকি (Sticky) বাটন থাকবে, যা কনভার্সন রেট বাড়াবে।
+One-Page Checkout:
+Step 1: নাম, ফোন নাম্বার, ডেলিভারি এরিয়া (ঢাকা/ঢাকার বাইরে)।
+Step 2: পেমেন্ট মেথড (Cash on Delivery অথবা RuxSpeed/bKash)।
+
+
+Digital Receipt: অর্ডার কনফার্ম হলে কাস্টমার সুন্দর একটি ডিজিটাল ইনভয়েস দেখতে পাবে।
+🎛️ Part B: Admin Panel (Seller Dashboard)
+Smart Dashboard: আজকের সেলস, পেন্ডিং অর্ডার এবং স্টক অ্যালার্ট।
+Order Engine: পেমেন্ট ভেরিফায়েড অর্ডারগুলোর পাশে "Send to Steadfast" বাটন, যা কুরিয়ারে অটো-বুকিং করবে।
+Mini-POS: দোকানের অফলাইন সেলের জন্য "Quick Sell" বাটন, যা অটোমেটিক অনলাইন স্টক থেকে প্রোডাক্ট মাইনাস করবে।
+
+🚨 4. Risk Analysis & Solutions (সমস্যা ও আমাদের নিখুঁত সমাধান)
+যেকোনো প্রজেক্টের আসল শক্তি তার প্রবলেম সলভিং ক্ষমতায়। নিচে আমাদের চিহ্নিত করা ৫টি মেজর রিস্ক এবং তার আর্কিটেকচারাল সমাধান দেওয়া হলো:
+⚠️ Problem 1: The "Fake Order & Return" Trap
+The Risk: বাংলাদেশে COD-তে ফেক অর্ডার ১৫-২০%। কুরিয়ার রিটার্ন চার্জ সেলারের পকেট থেকে যায়, যা তাদের হতাশ করে।
+The Solution:
+OTP Verification: চেকআউটে ফোন নাম্বার দিলে OTP যাবে। OTP ছাড়া অর্ডার কনফার্ম হবে না।
+Blacklist Database: আমাদের সিস্টেমে গ্লোবাল ডেটাবেস থাকবে। কোনো ফোন নাম্বার আগে রিটার্ন করে থাকলে, সেলার ড্যাশবোর্ডে 🔴 Red Flag (High Risk) দেখাবে।
+
+
+⚠️ Problem 2: The SMS Cost Danger
+The Risk: ফ্রি প্ল্যানে কাস্টমারদের SMS দিলে আমাদের সার্ভার ও SMS কস্ট বেড়ে আমরা দেউলিয়া হয়ে যাব।
+The Solution:
+ফ্রি প্ল্যানে কোনো SMS ফিচার থাকবে না। শুধু ইমেইল নোটিফিকেশন যাবে।
+Add-on Revenue: সেলারদের কাছে আমরা SMS প্যাক বিক্রি করব (১৫ পয়সায় কিনে ২৫ পয়সায় বিক্রি)।
+
+
+⚠️ Problem 3: Payment Gateway Complexity
+The Risk: ট্রেড লাইসেন্স না থাকায় অফিশিয়াল SSLCommerz বা aamarPay ব্যবহার করা সম্ভব নয়। ম্যানুয়াল TrxID মেলানো প্যারা।
+The Solution:
+Phase 1: শুধু Cash on Delivery (COD) এবং ম্যানুয়াল TrxID রাখা হবে।
+Phase 2: Z-এর তৈরি "RuxSpeed" গেটওয়ে বা আনঅফিসিয়াল bKash API ব্যবহার করে লাস্ট ট্রানজেকশন ম্যাচিং করা হবে।
+
+
+⚠️ Problem 4: The Onboarding Friction
+The Risk: সেলাররা Steadfast API Key কীভাবে বসাতে হয় তা জানে না। টেকনিক্যাল ভয়ে তারা সিস্টেম ছেড়ে দেবে।
+The Solution:
+ড্যাশবোর্ডে ১ মিনিটের ভিডিও টিউটোরিয়াল থাকবে ("কোথা থেকে API Key আনবেন")।
+প্রথম ২০ জন ক্লায়েন্টকে "Team Sifr" নিজে Zoom/AnyDesk-এর মাধ্যমে সেটআপ করে দেবে।
+
+
+⚠️ Problem 5: Execution Burnout
+The Risk: পুরো সিস্টেম (Customer Panel + Admin + Courier + POS) একসাথে বানাতে গেলে ৩ মাস লাগবে এবং প্রজেক্ট ড্রপ হওয়ার সম্ভাবনা আছে।
+The Solution (The Micro-MVP Strategy):
+আমরা সিস্টেমটাকে ভাগ করব। বর্তমান ফোকাস শুধু Customer Panel Demo বানানো।
+এই ডেমো দেখিয়ে আমরা সেলারদের প্রি-অর্ডার (Pre-order) বা ইন্টারেস্ট নেব। মার্কেট ভ্যালিডেশন হলে তারপর Admin Panel কোড করা হবে।
+
+
+
+
+
+
+
+📦 THE PRODUCT ENGINE: DYNAMIC CATEGORY LOGIC
+1. The Core UI Flow (সেলার যা দেখবে)
+সেলার যখন "Add Product" বাটনে ক্লিক করবে, তখন স্ক্রিনে ধাপে ধাপে ফিল্ড আসবে। একসাথে সব এসে স্ক্রিন জ্যাম করবে না।
+Step 1: Category Selection (The Trigger)
+সবার প্রথমে একটা Dropdown থাকবে: Select Product Type.
+Options: Fashion (জামা/জুতো), Books (বই), Electronics (গ্যাজেট), Grocery/Food (খাবার), Others.
+
+
+Step 2: Universal Fields (যেগুলো সব প্রোডাক্টেই লাগবে)
+Product Name (প্রোডাক্টের নাম)
+Images (সর্বোচ্চ ৪-৫টা ছবি আপলোড)
+Buying Price (কেনার দাম - শুধু এডমিন দেখবে লাভের হিসাবের জন্য)
+Selling Price (কাস্টমার যে দামে কিনবে)
+Discount (% অথবা ফিক্সড এমাউন্ট - Optional)
+Description (বিস্তারিত বিবরণ)
+
+
+Step 3: Dynamic Fields (ক্যাটাগরি অনুযায়ী যা বদলাবে)
+If Fashion: Size (S/M/L/XL), Color, Fabric.
+If Books: Author Name, Publisher.
+If Grocery: Weight/Unit (KG, Litre, Gram), Expiry Date.
+If Electronics: Warranty Period, Model.
+
+
+
+🧠 2. The Database Secret (Supabase / PostgreSQL Logic)
+M-কে বলবি ডেটাবেসে যেন প্রত্যেকটা ফিল্ডের জন্য আলাদা কলাম (Column) না বানায়। (যেমন: Author এর জন্য আলাদা কলাম, Size এর জন্য আলাদা কলাম—এভাবে করলে ডেটাবেস জগাখিচুড়ি হয়ে যাবে)।
+The Architect's Solution: The 
+Supabase-এ প্রোডাক্ট টেবিলে একটা ম্যাজিক কলাম থাকবে যার নাম metadata (Type: JSONB)।
+সেলার যখন বই আপলোড করবে, ওই কলামে সেভ হবে: {"author": "Humayun Ahmed", "publisher": "Anyaprokash"}
+সেলার যখন জামা আপলোড করবে, সেভ হবে: {"color": "Red", "fabric": "Cotton"}
+এই এক লজিকেই তোর ডেটাবেস সুপার ফাস্ট এবং ক্লিন থাকবে।
+
+🧮 3. The Variant & Stock Logic (সবচেয়ে ক্রিটিক্যাল পার্ট)
+জামা বা জুতো বেচতে গেলে একই প্রোডাক্টের অনেক সাইজ থাকে। এটাকে বলে Variants। এটার হিসাব না মিললে সেলারের স্টক উল্টাপাল্টা হয়ে যাবে।
+লজিক: সেলার যদি Fashion সিলেক্ট করে, তাহলে তাকে জিজ্ঞেস করবে "Does this product have variants? (Yes/No)"
+If YES: সিস্টেম একটা টেবিল ওপেন করে দেবে:
+Variant 1: Size M | Color Red | Stock: 10 pcs | Price: 500
+Variant 2: Size L | Color Red | Stock: 5 pcs | Price: 550
+
+
+Checkout Logic: কাস্টমার যখন সাইট থেকে অর্ডার করবে, সে সাইজ সিলেক্ট করবে। অর্ডার কনফার্ম হলে শুধু ওই নির্দিষ্ট সাইজের স্টক থেকে ১ মাইনাস হবে।
+
+✏️ 4. The Edit Logic (মডিফিকেশন সিস্টেম)
+তুই বলেছিস: "সব প্রোডাক্ট এডিট করার অপশন থাকতে হবে।"
+প্রোডাক্ট লিস্ট পেজে প্রতিটি আইটেমের পাশে একটা (⋮) Three Dots বা এডিট আইকন থাকবে।
+ক্লিক করলে সেইম "Add Product" ফর্মটা ওপেন হবে, কিন্তু আগের ডেটাগুলো ফিল-আপ করা থাকবে।
+সেলার চাইলে দাম, স্টক বা ছবি চেঞ্জ করে 'Update' বাটনে ক্লিক করবে।
+
+📩 5. The Command for Developer 'M' (তোর মেসেজ ড্রাফট)
+তুই এই নিচের টেক্সটটা কপি করে M-কে দিবি, সে বুঝে যাবে তাকে কী বানাতে হবে:
+"M, 'Add Product' সেকশনের আর্কিটেকচারটা একটু ডাইনামিক হবে। সেলার প্রথমে Category (Fashion, Books, Food, Electronics) সিলেক্ট করবে। Category-এর ওপর ভিত্তি করে ফর্মের ইনপুট ফিল্ডগুলো (Dynamic Fields) চেঞ্জ হবে।
+Supabase-এ এটার জন্য আলাদা আলাদা কলাম বানাবি না। 
+
+
+
+
+
+📱 1. The Design Philosophy (UX Rules)
+100% Mobile-First: তোর কাস্টমারদের ৯৫% আসবে ফেসবুকের মোবাইল অ্যাপ থেকে লিংক ক্লিক করে। তাই পিসি (Desktop) ভিউ নিয়ে মাথা ঘামাবি না, মোবাইল ভিউ যেন মাখনের মতো স্মুথ হয় সেটা নিশ্চিত করবি।
+No Forced Login: "অ্যাকাউন্ট খুলুন" বা "সাইন-আপ করুন"—এই অপশন কাস্টমারকে দিবিই না। গেস্ট চেকআউট (Guest Checkout) হবে। মানুষ ইনফো দেবে, প্রোডাক্ট কিনবে, চলে যাবে।
+
+🏠 2. Home Page (The Storefront)
+কাস্টমার লিংকে ক্লিক করার পর প্রথম ৩ সেকেন্ডে এই পেজটা লোড হতে হবে।
+Header (টপ বার): সেলারের লোগো (বামে), সার্চ বার (মাঝে), কার্ট আইকন (ডানে - কয়টা আইটেম আছে তার লাল ব্যাজসহ)।
+Hero Banner: একটা স্লাইডার যেখানে সেলার তার অফার বা নতুন কালেকশনের ছবি দেবে।
+Category Pills: অনুভূমিক (Horizontal) স্ক্রল করা যায় এমন কিছু বাটন (যেমন: All, Shirts, Books, Gadgets)।
+Product Grid (প্রোডাক্ট লিস্ট):
+মোবাইলে এক লাইনে ২টা করে প্রোডাক্ট দেখাবে।
+কার্ড ডিজাইন: উপরে স্কয়ার ছবি -> নিচে প্রোডাক্টের নাম -> তার নিচে দাম (ডিসকাউন্ট থাকলে রেগুলার প্রাইস কাটা থাকবে) -> একদম নিচে একটা ছোট "Add to Cart" বাটন।
+
+
+
+📦 3. Product Details Page (PDP) - The Dynamic Magic
+এই পেজেই তোর ওই JSONB এবং Variants লজিক কাজে লাগবে।
+Media Gallery: প্রোডাক্টের ছবিগুলো সোয়াইপ (Swipe) করে দেখা যাবে।
+Basic Info: নাম, দাম, এবং সেলারের দেওয়া ডেসক্রিপশন।
+Dynamic Data Render (তোর আর্কিটেকচার):
+যদি প্রোডাক্টটা Book হয়, তাহলে UI তে অটোমেটিক সুন্দর করে লেখা আসবে:
+Author: Humayun Ahmed
+Publisher: Anyaprokash
+
+
+যদি প্রোডাক্টটা Fashion হয়, তাহলে সাইজ এবং কালার সিলেক্ট করার বাটন (Radio/Pills) আসবে।
+লজিক: যদি "Size M" এর স্টক ০ থাকে, তাহলে ওই বাটনটা ডিসেবল (Disabled) বা গ্রে (Grey) হয়ে থাকবে, যাতে কাস্টমার ক্লিক করতে না পারে।
+
+
+
+
+The Sticky Footer (Conversion Hack): কাস্টমার পেজের যত নিচেই স্ক্রল করুক না কেন, স্ক্রিনের একদম নিচে দুটো বাটন আঠার মতো লেগে থাকবে:
+Add to Cart (সাদা ব্যাকগ্রাউন্ড, কালো বর্ডার)
+Order Now (সলিড কালার, ডাইরেক্ট চেকআউট পেজে নিয়ে যাবে)।
+
+
+
+🛒 4. The One-Page Checkout (The Money Maker)
+এটা তোর সিস্টেমের সবচেয়ে ক্রিটিক্যাল পেজ। কাস্টমার যেন কোনোভাবেই ব্যাক না করে। সব এক পেজে হবে।
+Section A: Order Summary: কাস্টমার কী কিনছে, তার একটা ছোট লিস্ট এবং টোটাল বিল।
+Section B: Delivery Info (সিম্পল ফর্ম):
+Full Name (নাম)
+Mobile Number (ফোন নাম্বার - এখানে ভুল নাম্বার দিলে বা ডিজিট কম হলে এরর দেখাবে)।
+Delivery Zone (ড্রপডাউন: Inside Dhaka / Outside Dhaka)। লজিক: এটা সিলেক্ট করার সাথে সাথে ডেলিভারি চার্জ ৬০ বা ১২০ টাকা বিলে অটোমেটিক অ্যাড হয়ে যাবে।
+Full Address (বিস্তারিত ঠিকানা)।
+
+
+Section C: Payment Method:
+Cash on Delivery (ডিফল্ট সিলেক্ট করা থাকবে)।
+Pay Online (যদি সেলার RuxSpeed বা অন্য পেমেন্ট গেটওয়ে অ্যাক্টিভ রাখে)।
+
+
+The Final Button: বিশাল বড় একটা বাটন— "Confirm Order - ৳[Total Amount]"।
+
+🎉 5. Success Page & Automation Trigger
+কাস্টমার "Confirm Order"-এ ক্লিক করার পর কী হবে?
+UI Feedback: স্ক্রিনে টিক মার্ক (Green Check) আসবে। লেখা থাকবে: "ধন্যবাদ! আপনার অর্ডারটি সফল হয়েছে। Order ID: #10045।"
+Backend Magic (Invisible):
+ডাটাবেসে অর্ডার সেভ হবে।
+প্রোডাক্টের স্টক (Inventory) থেকে ১ মাইনাস হবে।
+সেলার তার এডমিন ড্যাশবোর্ডে একটা নোটিফিকেশন পাবে।
+কাস্টমারের ফোনে একটা SMS যাবে (যদি সেলার SMS API অন রাখে)।
+
+
