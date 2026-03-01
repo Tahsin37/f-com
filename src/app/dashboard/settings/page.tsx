@@ -11,8 +11,6 @@ import { Save, Loader2, Store, Key, MapPin, Truck } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import type { Seller } from "@/lib/types"
 
-const SELLER_ID = "a0000000-0000-0000-0000-000000000001"
-
 export default function SettingsPage() {
     const [seller, setSeller] = useState<Seller | null>(null)
     const [loading, setLoading] = useState(true)
@@ -28,24 +26,30 @@ export default function SettingsPage() {
     const [steadfastSecret, setSteadfastSecret] = useState("")
 
     useEffect(() => {
-        supabase
-            .from("sellers")
-            .select("*")
-            .eq("id", SELLER_ID)
-            .single()
-            .then(({ data }) => {
-                if (data) {
-                    setSeller(data)
-                    setName(data.name)
-                    setPhone(data.phone || "")
-                    setEmail(data.email || "")
-                    setDeliveryInside(String(data.settings?.delivery_inside ?? 60))
-                    setDeliveryOutside(String(data.settings?.delivery_outside ?? 120))
-                    setSteadfastKey(data.api_keys?.steadfast_key || "")
-                    setSteadfastSecret(data.api_keys?.steadfast_secret || "")
-                }
-                setLoading(false)
-            })
+        async function load() {
+            const { data: { session } } = await supabase.auth.getSession()
+            const userId = session?.user?.id
+            if (!userId) { setLoading(false); return }
+
+            const { data } = await supabase
+                .from("sellers")
+                .select("*")
+                .eq("user_id", userId)
+                .single()
+
+            if (data) {
+                setSeller(data)
+                setName(data.name)
+                setPhone(data.phone || "")
+                setEmail(data.email || "")
+                setDeliveryInside(String(data.settings?.delivery_inside ?? 60))
+                setDeliveryOutside(String(data.settings?.delivery_outside ?? 120))
+                setSteadfastKey(data.api_keys?.steadfast_key || "")
+                setSteadfastSecret(data.api_keys?.steadfast_secret || "")
+            }
+            setLoading(false)
+        }
+        load()
     }, [])
 
     const handleSave = async () => {
@@ -66,7 +70,7 @@ export default function SettingsPage() {
                         steadfast_secret: steadfastSecret || "",
                     },
                 })
-                .eq("id", SELLER_ID)
+                .eq("id", seller!.id)
 
             if (error) throw error
             toast.success("Settings saved!")
@@ -86,7 +90,7 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="max-w-2xl space-y-6">
+        <div className="space-y-6">
             <div>
                 <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Settings</h1>
                 <p className="text-muted-foreground text-sm mt-1">Manage your store profile, delivery charges, and API keys</p>
@@ -118,7 +122,7 @@ export default function SettingsPage() {
                     {seller?.slug && (
                         <div className="p-3 rounded-xl bg-slate-50 dark:bg-neutral-800/50 text-sm">
                             <p className="text-muted-foreground mb-1">Your storefront URL:</p>
-                            <code className="text-teal-600 font-mono font-bold">/demo/{seller.slug}</code>
+                            <code className="text-teal-600 font-mono font-bold">/store/{seller.slug}</code>
                         </div>
                     )}
                 </CardContent>

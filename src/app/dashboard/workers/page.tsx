@@ -15,8 +15,7 @@ import {
     Loader2, ShoppingBag, PenLine, Eye, Truck, BarChart3, Save, X
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-
-const SELLER_ID = "a0000000-0000-0000-0000-000000000001"
+import { Mail } from "lucide-react"
 
 interface Worker {
     id: string
@@ -42,6 +41,8 @@ export default function WorkersPage() {
     const [loading, setLoading] = useState(true)
     const [dialogOpen, setDialogOpen] = useState(false)
     const [editingWorker, setEditingWorker] = useState<Worker | null>(null)
+    const [sellerId, setSellerId] = useState("")
+    const [storeName, setStoreName] = useState("")
 
     // Form state
     const [name, setName] = useState("")
@@ -51,10 +52,19 @@ export default function WorkersPage() {
     const [saving, setSaving] = useState(false)
 
     const loadWorkers = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        const userId = session?.user?.id
+        if (!userId) { setLoading(false); return }
+
+        const { data: seller } = await supabase.from("sellers").select("id, name").eq("user_id", userId).single()
+        if (!seller) { setLoading(false); return }
+        setSellerId(seller.id)
+        setStoreName(seller.name)
+
         const { data } = await supabase
             .from("workers")
             .select("*")
-            .eq("seller_id", SELLER_ID)
+            .eq("seller_id", seller.id)
             .order("created_at", { ascending: false })
         setWorkers(data ?? [])
         setLoading(false)
@@ -95,13 +105,39 @@ export default function WorkersPage() {
                 toast.success("Worker updated!")
             } else {
                 await supabase.from("workers").insert({
-                    seller_id: SELLER_ID,
+                    seller_id: sellerId,
                     name,
                     phone,
                     email,
                     permissions,
                 })
-                toast.success("Worker added!")
+
+                // Send invitation email if worker has an email
+                if (email.trim()) {
+                    try {
+                        const loginUrl = `${window.location.origin}/auth/worker`
+                        const res = await fetch("/api/workers/invite", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                workerName: name,
+                                workerEmail: email,
+                                storeName,
+                                permissions,
+                                loginUrl,
+                            }),
+                        })
+                        if (res.ok) {
+                            toast.success("Worker added & invitation email sent! 📧")
+                        } else {
+                            toast.success("Worker added! (Email delivery pending)")
+                        }
+                    } catch {
+                        toast.success("Worker added! (Email could not be sent)")
+                    }
+                } else {
+                    toast.success("Worker added!")
+                }
             }
             setDialogOpen(false)
             loadWorkers()
@@ -254,8 +290,8 @@ export default function WorkersPage() {
                                 {PERMISSION_LIST.map(p => (
                                     <div key={p.key}
                                         className={`flex items-center justify-between p-3 rounded-xl border transition-colors cursor-pointer ${permissions[p.key]
-                                                ? "border-teal-300 bg-teal-50 dark:border-teal-800 dark:bg-teal-950/30"
-                                                : "border-neutral-200 dark:border-neutral-800"
+                                            ? "border-teal-300 bg-teal-50 dark:border-teal-800 dark:bg-teal-950/30"
+                                            : "border-neutral-200 dark:border-neutral-800"
                                             }`}
                                         onClick={() => togglePermission(p.key)}>
                                         <div className="flex items-center gap-3">
@@ -265,7 +301,9 @@ export default function WorkersPage() {
                                                 <p className="text-[11px] text-muted-foreground">{p.description}</p>
                                             </div>
                                         </div>
-                                        <Switch checked={!!permissions[p.key]} onCheckedChange={() => togglePermission(p.key)} />
+                                        <div onClick={e => e.stopPropagation()}>
+                                            <Switch checked={!!permissions[p.key]} onCheckedChange={() => togglePermission(p.key)} />
+                                        </div>
                                     </div>
                                 ))}
                             </div>

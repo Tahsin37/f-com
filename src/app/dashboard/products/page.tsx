@@ -11,19 +11,26 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { Plus, Search, Pencil, Trash2, Package, Loader2, Eye, EyeOff } from "lucide-react"
 
-const SELLER_ID = "a0000000-0000-0000-0000-000000000001"
-
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState("")
+    const [sellerId, setSellerId] = useState<string>("")
 
     async function loadProducts() {
         setLoading(true)
+        const { data: { session } } = await supabase.auth.getSession()
+        const userId = session?.user?.id
+        if (!userId) { setLoading(false); return }
+
+        const { data: seller } = await supabase.from("sellers").select("id").eq("user_id", userId).single()
+        if (!seller) { setLoading(false); return }
+        setSellerId(seller.id)
+
         const { data, error } = await supabase
             .from("products")
             .select("*, variants(*)")
-            .eq("seller_id", SELLER_ID)
+            .eq("seller_id", seller.id)
             .order("created_at", { ascending: false })
 
         if (error) {

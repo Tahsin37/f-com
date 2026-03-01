@@ -151,6 +151,13 @@ export default function SignInPage() {
                         </Link>
                     </p>
 
+                    <p className="text-center text-sm text-muted-foreground mt-3">
+                        Are you a worker?{" "}
+                        <Link href="/auth/worker" className="font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+                            Sign in as Worker →
+                        </Link>
+                    </p>
+
                     <p className="text-center text-xs text-muted-foreground mt-4">
                         By signing in, you agree to our{" "}
                         <Link href="/legal/terms" className="underline hover:text-foreground">Terms of Service</Link>

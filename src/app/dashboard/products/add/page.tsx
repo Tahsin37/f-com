@@ -11,12 +11,12 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { useRouter, useSearchParams } from "next/navigation"
 import {
-    ArrowLeft, Save, Plus, Trash2, Loader2,
+    ArrowLeft, Save, Plus, Trash2, Loader2, Upload, X,
     ShoppingBag, BookOpen, Cpu, Apple, MoreHorizontal, ImagePlus
 } from "lucide-react"
 import Link from "next/link"
 
-const SELLER_ID = "a0000000-0000-0000-0000-000000000001"
+// seller_id is fetched from session
 
 const CATEGORY_OPTIONS: { value: ProductCategory; label: string; icon: React.ElementType; labelBn: string }[] = [
     { value: "fashion", label: "Fashion", icon: ShoppingBag, labelBn: "জামা/জুতো" },
@@ -47,13 +47,26 @@ function AddProductForm() {
     const [buyingPrice, setBuyingPrice] = useState("")
     const [sellingPrice, setSellingPrice] = useState("")
     const [discount, setDiscount] = useState("")
-    const [images, setImages] = useState("")  // comma-separated URLs for now
+    const [images, setImages] = useState<string[]>([])
     const [metadata, setMetadata] = useState<Record<string, string>>({})
     const [hasVariants, setHasVariants] = useState(false)
     const [stock, setStock] = useState("")
     const [variants, setVariants] = useState<VariantRow[]>([])
     const [saving, setSaving] = useState(false)
     const [loadingEdit, setLoadingEdit] = useState(false)
+    const [sellerId, setSellerId] = useState("")
+    const [uploading, setUploading] = useState(false)
+
+    // Get seller_id from session
+    useEffect(() => {
+        async function getSeller() {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session?.user?.id) return
+            const { data } = await supabase.from("sellers").select("id").eq("user_id", session.user.id).single()
+            if (data) setSellerId(data.id)
+        }
+        getSeller()
+    }, [])
 
     // Load product for editing
     useEffect(() => {
@@ -72,7 +85,7 @@ function AddProductForm() {
                     setBuyingPrice(String(data.buying_price))
                     setSellingPrice(String(data.selling_price))
                     setDiscount(String(data.discount || ""))
-                    setImages((data.images || []).join(", "))
+                    setImages(data.images || [])
                     setMetadata(data.metadata || {})
                     setHasVariants(data.has_variants)
                     setStock(String(data.stock))
@@ -111,16 +124,15 @@ function AddProductForm() {
 
         setSaving(true)
 
-        const imageArray = images.split(",").map(s => s.trim()).filter(Boolean)
         const productData = {
-            seller_id: SELLER_ID,
+            seller_id: sellerId,
             name,
             category,
             description: description || null,
             buying_price: Number(buyingPrice) || 0,
             selling_price: Number(sellingPrice),
             discount: Number(discount) || 0,
-            images: imageArray,
+            images,
             metadata,
             has_variants: hasVariants,
             stock: hasVariants ? 0 : (Number(stock) || 0),
@@ -259,12 +271,77 @@ function AddProductForm() {
                                 />
                             </div>
 
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                                 <Label className="font-semibold flex items-center gap-2">
-                                    <ImagePlus className="h-4 w-4" /> Image URLs
+                                    <ImagePlus className="h-4 w-4" /> Product Images
                                 </Label>
-                                <Input value={images} onChange={e => setImages(e.target.value)} placeholder="Paste image URLs, comma separated" className="h-11 rounded-xl" />
-                                <p className="text-[10px] text-muted-foreground">Up to 5 image URLs, separated by commas</p>
+
+                                {/* Image previews */}
+                                {images.length > 0 && (
+                                    <div className="flex flex-wrap gap-3">
+                                        {images.map((url, idx) => (
+                                            <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700">
+                                                <img src={url} alt="" className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setImages(images.filter((_, i) => i !== idx))}
+                                                    className="absolute top-1 right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Upload area  */}
+                                {images.length < 5 && (
+                                    <label className="flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 cursor-pointer hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all">
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp,image/gif"
+                                            multiple
+                                            className="hidden"
+                                            disabled={uploading}
+                                            onChange={async (e) => {
+                                                const files = e.target.files
+                                                if (!files || files.length === 0) return
+                                                setUploading(true)
+                                                const newUrls: string[] = []
+                                                for (let i = 0; i < Math.min(files.length, 5 - images.length); i++) {
+                                                    const formData = new FormData()
+                                                    formData.append("file", files[i])
+                                                    formData.append("seller_id", sellerId)
+                                                    try {
+                                                        const res = await fetch("/api/upload", { method: "POST", body: formData })
+                                                        const data = await res.json()
+                                                        if (data.url) newUrls.push(data.url)
+                                                        else toast.error(data.error || "Upload failed")
+                                                    } catch { toast.error("Upload failed") }
+                                                }
+                                                if (newUrls.length > 0) {
+                                                    setImages(prev => [...prev, ...newUrls])
+                                                    toast.success(`${newUrls.length} image(s) uploaded!`)
+                                                }
+                                                setUploading(false)
+                                                e.target.value = ""
+                                            }}
+                                        />
+                                        {uploading ? (
+                                            <>
+                                                <Loader2 className="h-6 w-6 animate-spin text-teal-600 mb-1" />
+                                                <span className="text-xs text-teal-600 font-semibold">Uploading...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                                                <span className="text-xs text-muted-foreground font-semibold">Click to upload images</span>
+                                                <span className="text-[10px] text-muted-foreground">JPEG, PNG, WebP, GIF — Max 5MB each</span>
+                                            </>
+                                        )}
+                                    </label>
+                                )}
+                                <p className="text-[10px] text-muted-foreground">{images.length}/5 images uploaded</p>
                             </div>
                         </CardContent>
                     </Card>

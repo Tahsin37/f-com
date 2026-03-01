@@ -18,8 +18,9 @@ import {
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import type { Order, Product } from "@/lib/types"
+import Link from "next/link"
 
-const SELLER_ID = "a0000000-0000-0000-0000-000000000001"
+const SELLER_ID_PLACEHOLDER = "" // resolved at runtime from session
 
 // ─── Status Colors ──────────────────────────────────────────────────────────────
 const STATUS_COLORS: Record<string, string> = {
@@ -79,11 +80,20 @@ export default function DashboardPage() {
     const [refreshing, setRefreshing] = useState(false)
     const [search, setSearch] = useState("")
     const [courierOrder, setCourierOrder] = useState<Order | null>(null)
+    const [sellerId, setSellerId] = useState("")
 
     const loadData = useCallback(async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        const userId = session?.user?.id
+        if (!userId) { setLoading(false); return }
+
+        const { data: seller } = await supabase.from("sellers").select("id").eq("user_id", userId).single()
+        if (!seller) { setLoading(false); return }
+        setSellerId(seller.id)
+
         const [ordersRes, productsRes] = await Promise.all([
-            supabase.from("orders").select("*").eq("seller_id", SELLER_ID).order("created_at", { ascending: false }),
-            supabase.from("products").select("*, variants(*)").eq("seller_id", SELLER_ID),
+            supabase.from("orders").select("*").eq("seller_id", seller.id).order("created_at", { ascending: false }),
+            supabase.from("products").select("*, variants(*)").eq("seller_id", seller.id),
         ])
         setOrders(ordersRes.data ?? [])
         setProducts(productsRes.data ?? [])
@@ -343,15 +353,22 @@ export default function DashboardPage() {
                                                 )}
                                             </td>
                                             <td className="px-4 py-3 text-right">
-                                                {(o.status === "pending" || o.status === "processing") && (
-                                                    <Button size="sm" className="h-7 text-xs rounded-lg gap-1 bg-teal-600 hover:bg-teal-700 text-white"
-                                                        onClick={() => setCourierOrder(o)}>
-                                                        <Truck className="h-3 w-3" /> Ship
-                                                    </Button>
-                                                )}
-                                                {o.courier_awb && (
-                                                    <span className="text-xs text-muted-foreground">{o.courier_awb}</span>
-                                                )}
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    <Link href={`/invoice/${o.id}`} target="_blank">
+                                                        <Button size="sm" variant="outline" className="h-7 text-xs rounded-lg gap-1">
+                                                            📄 Invoice
+                                                        </Button>
+                                                    </Link>
+                                                    {(o.status === "pending" || o.status === "processing") && (
+                                                        <Button size="sm" className="h-7 text-xs rounded-lg gap-1 bg-teal-600 hover:bg-teal-700 text-white"
+                                                            onClick={() => setCourierOrder(o)}>
+                                                            <Truck className="h-3 w-3" /> Ship
+                                                        </Button>
+                                                    )}
+                                                    {o.courier_awb && (
+                                                        <span className="text-xs text-muted-foreground">{o.courier_awb}</span>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

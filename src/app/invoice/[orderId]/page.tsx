@@ -43,14 +43,26 @@ export default function InvoicePage({ params }: { params: Promise<{ orderId: str
 
     useEffect(() => {
         async function loadOrder() {
-            // Fetch order by order_number
-            const { data: orderData, error } = await supabase
+            // Try by UUID first (dashboard links with o.id), then by order_number
+            let orderData: any = null
+            const { data: byId } = await supabase
                 .from("orders")
                 .select("*")
-                .eq("order_number", orderId)
+                .eq("id", orderId)
                 .single()
 
-            if (error || !orderData) {
+            if (byId) {
+                orderData = byId
+            } else {
+                const { data: byNum } = await supabase
+                    .from("orders")
+                    .select("*")
+                    .eq("order_number", orderId)
+                    .single()
+                orderData = byNum
+            }
+
+            if (!orderData) {
                 setLoading(false)
                 return
             }

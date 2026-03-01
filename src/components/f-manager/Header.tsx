@@ -10,7 +10,7 @@ import { Menu, X, BarChart3, CreditCard, Truck, Smartphone } from "lucide-react"
 const navLinks = [
     { href: "/#features", label: "Features" },
     { href: "/#pricing", label: "Pricing" },
-    { href: "/demo/sifr-style", label: "Demo" },
+    { href: "/demo", label: "Demo" },
 ]
 
 export function Header() {

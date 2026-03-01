@@ -8,14 +8,32 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { BarChart3, Eye, EyeOff, ArrowRight, ShieldCheck, Truck, Smartphone, Loader2 } from "lucide-react"
+import { BarChart3, Eye, EyeOff, ArrowRight, ShieldCheck, Truck, Smartphone, Loader2, Monitor, CheckCircle2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+
+const TEMPLATES = [
+    {
+        id: "starter",
+        name: "Starter",
+        desc: "Clean & minimal — perfect for boutique shops",
+        icon: Smartphone,
+        gradient: "from-violet-500 to-purple-600",
+    },
+    {
+        id: "pro",
+        name: "Pro",
+        desc: "Full e-commerce — Daraz-like with flash deals & search",
+        icon: Monitor,
+        gradient: "from-teal-500 to-emerald-600",
+    },
+]
 
 export default function SignUpPage() {
     const [form, setForm] = useState({ name: "", storeName: "", phone: "", email: "", password: "" })
     const [showPassword, setShowPassword] = useState(false)
     const [agreed, setAgreed] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [template, setTemplate] = useState("pro")
     const router = useRouter()
 
     const update = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
@@ -23,7 +41,7 @@ export default function SignUpPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!agreed) { toast.error("Please accept the Terms of Service"); return }
-        if (!form.name || !form.phone || !form.password || !form.email) {
+        if (!form.name || !form.storeName || !form.email || !form.password) {
             toast.error("Please fill in all required fields")
             return
         }
@@ -34,41 +52,41 @@ export default function SignUpPage() {
 
         setLoading(true)
         try {
-            // 1. Create Supabase Auth user
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: form.email,
                 password: form.password,
                 options: {
-                    data: {
-                        full_name: form.name,
-                        phone: form.phone,
-                    }
+                    data: { full_name: form.name, phone: form.phone }
                 }
             })
-
             if (authError) throw authError
             if (!authData.user) throw new Error("No user returned")
 
-            // 2. Generate a slug from the store name or name
-            const rawSlug = (form.storeName || form.name)
+            const rawSlug = form.storeName
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/^-|-$/g, "")
+            const slug = rawSlug
 
-            // Make slug unique with a short random suffix
-            const slug = `${rawSlug}-${Math.floor(1000 + Math.random() * 9000)}`
-
-            // 3. Insert a sellers row linked to the new auth user
             const { error: sellerError } = await supabase.from("sellers").insert({
                 user_id: authData.user.id,
-                name: form.storeName || form.name,
+                name: form.storeName,
                 slug,
                 phone: form.phone,
                 email: form.email,
                 plan: "free",
-                settings: { delivery_inside: 60, delivery_outside: 120 }
+                settings: {
+                    store_template: template,
+                    store_tagline: "Best quality products with fast delivery! 🇧🇩",
+                    theme_color: "#0d9488",
+                    banner_title: `${form.storeName} — New Arrivals`,
+                    banner_subtitle: "Free delivery on orders above ৳999",
+                    banner_cta: "Shop Now",
+                    banner_image: "",
+                    delivery_inside: 60,
+                    delivery_outside: 120,
+                }
             })
-
             if (sellerError) throw sellerError
 
             toast.success("Account created! Welcome to F-Manager 🎉")
@@ -128,74 +146,102 @@ export default function SignUpPage() {
             </div>
 
             {/* Right: Sign Up Form */}
-            <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 overflow-y-auto">
+            <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-10 overflow-y-auto">
                 <div className="w-full max-w-md">
-                    <Link href="/" className="flex lg:hidden items-center gap-2 mb-8">
+                    <Link href="/" className="flex lg:hidden items-center gap-2 mb-6">
                         <div className="h-8 w-8 rounded-lg bg-teal-600 flex items-center justify-center">
                             <BarChart3 className="h-4 w-4 text-white" />
                         </div>
                         <span className="font-extrabold text-xl text-teal-600 dark:text-teal-400">F-Manager</span>
                     </Link>
 
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-extrabold text-foreground mb-2">Create your account</h1>
-                        <p className="text-muted-foreground">Start managing your F-commerce sales today. Free forever.</p>
+                    <div className="mb-6">
+                        <h1 className="text-2xl font-extrabold text-foreground mb-1">Create your account</h1>
+                        <p className="text-sm text-muted-foreground">Start managing your F-commerce sales today.</p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name" className="font-semibold">Your Name <span className="text-destructive">*</span></Label>
+                    <form onSubmit={handleSubmit} className="space-y-3.5">
+                        <div className="grid sm:grid-cols-2 gap-3.5">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="name" className="font-semibold text-xs">Your Name <span className="text-destructive">*</span></Label>
                                 <Input id="name" placeholder="Sabrina Rahman" value={form.name} onChange={e => update("name", e.target.value)}
-                                    className="h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800" />
+                                    className="h-10 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-sm" />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="storeName" className="font-semibold">Store Name</Label>
-                                <Input id="storeName" placeholder="Zara's Wardrobe" value={form.storeName} onChange={e => update("storeName", e.target.value)}
-                                    className="h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800" />
+                            <div className="space-y-1.5">
+                                <Label htmlFor="storeName" className="font-semibold text-xs">Store Name <span className="text-destructive">*</span></Label>
+                                <Input id="storeName" placeholder="Zara's Closet" value={form.storeName} onChange={e => update("storeName", e.target.value)}
+                                    className="h-10 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-sm" />
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="phone" className="font-semibold">Phone Number <span className="text-destructive">*</span></Label>
-                            <Input id="phone" type="tel" placeholder="01XXXXXXXXX" value={form.phone} onChange={e => update("phone", e.target.value)}
-                                className="h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800" />
+                        <div className="grid sm:grid-cols-2 gap-3.5">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="phone" className="font-semibold text-xs">Phone</Label>
+                                <Input id="phone" type="tel" placeholder="01XXXXXXXXX" value={form.phone} onChange={e => update("phone", e.target.value)}
+                                    className="h-10 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-sm" />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="email" className="font-semibold text-xs">Email <span className="text-destructive">*</span></Label>
+                                <Input id="email" type="email" placeholder="you@example.com" value={form.email} onChange={e => update("email", e.target.value)}
+                                    className="h-10 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-sm" />
+                            </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="font-semibold">Email Address <span className="text-destructive">*</span></Label>
-                            <Input id="email" type="email" placeholder="you@example.com" value={form.email} onChange={e => update("email", e.target.value)}
-                                className="h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800" />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="password" className="font-semibold">Password <span className="text-destructive">*</span></Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="password" className="font-semibold text-xs">Password <span className="text-destructive">*</span></Label>
                             <div className="relative">
                                 <Input id="password" type={showPassword ? "text" : "password"} placeholder="Min. 6 characters" value={form.password} onChange={e => update("password", e.target.value)}
-                                    className="h-12 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 pr-12" />
-                                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    className="h-10 rounded-xl bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 pr-10 text-sm" />
+                                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-3 py-1">
+                        {/* Template Selector */}
+                        <div className="space-y-2 pt-1">
+                            <Label className="font-semibold text-xs">Choose Your Store Design</Label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {TEMPLATES.map(t => (
+                                    <button
+                                        key={t.id}
+                                        type="button"
+                                        onClick={() => setTemplate(t.id)}
+                                        className={`relative rounded-xl border-2 p-3 text-left transition-all ${template === t.id
+                                            ? "border-teal-500 bg-teal-50 dark:bg-teal-950/30 shadow-md"
+                                            : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300"
+                                            }`}
+                                    >
+                                        {template === t.id && (
+                                            <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-teal-600" />
+                                        )}
+                                        <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${t.gradient} flex items-center justify-center mb-2`}>
+                                            <t.icon className="h-4 w-4 text-white" />
+                                        </div>
+                                        <p className="text-xs font-bold">{t.name}</p>
+                                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{t.desc}</p>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-2.5 py-0.5">
                             <Checkbox id="terms" checked={agreed} onCheckedChange={v => setAgreed(!!v)} className="mt-0.5" />
-                            <Label htmlFor="terms" className="text-sm font-medium cursor-pointer leading-snug">
+                            <Label htmlFor="terms" className="text-[11px] font-medium cursor-pointer leading-snug">
                                 I agree to the{" "}
-                                <Link href="/legal/terms" className="text-teal-600 dark:text-teal-400 hover:underline font-bold">Terms of Service</Link>
-                                {" "}and{" "}
+                                <Link href="/legal/terms" className="text-teal-600 dark:text-teal-400 hover:underline font-bold">Terms</Link>
+                                {" "}&{" "}
                                 <Link href="/legal/privacy" className="text-teal-600 dark:text-teal-400 hover:underline font-bold">Privacy Policy</Link>
                             </Label>
                         </div>
 
                         <Button type="submit" disabled={loading || !agreed}
-                            className="w-full h-12 rounded-xl font-bold text-base bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50">
-                            {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Creating account...</> : <>Create Free Account <ArrowRight className="ml-2 h-4 w-4" /></>}
+                            className="w-full h-11 rounded-xl font-bold text-sm bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50">
+                            {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Creating...</> : <>Create Free Account <ArrowRight className="ml-2 h-4 w-4" /></>}
                         </Button>
                     </form>
 
-                    <p className="text-center text-sm text-muted-foreground mt-6">
+                    <p className="text-center text-xs text-muted-foreground mt-5">
                         Already have an account?{" "}
                         <Link href="/auth/signin" className="font-bold text-teal-600 dark:text-teal-400 hover:underline">Sign in</Link>
                     </p>

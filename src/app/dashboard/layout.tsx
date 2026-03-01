@@ -5,7 +5,8 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
     LayoutDashboard, Package, Settings, ShoppingCart,
-    Menu, X, ChevronRight, Users, Truck, BarChart3, ClipboardList, UserPlus, LogOut, Loader2
+    Menu, X, ChevronRight, Users, Truck, BarChart3, ClipboardList, UserPlus, LogOut, Loader2, Store,
+    Megaphone, Palette, Globe, Ticket
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/f-manager/ThemeToggle"
@@ -14,13 +15,18 @@ import type { User } from "@supabase/supabase-js"
 
 const NAV_ITEMS = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+    { href: "/dashboard/store", label: "My Store", icon: Store },
     { href: "/dashboard/quick-sell", label: "Quick Sell (POS)", icon: ShoppingCart },
-    { href: "/dashboard#orders", label: "Orders", icon: ClipboardList },
+    { href: "/dashboard/orders", label: "Orders", icon: ClipboardList },
     { href: "/dashboard/products", label: "Products", icon: Package },
     { href: "/dashboard#customers", label: "Customers", icon: Users },
     { href: "/dashboard#courier", label: "Courier Log", icon: Truck },
     { href: "/dashboard#analytics", label: "Analytics", icon: BarChart3 },
     { href: "/dashboard/workers", label: "Workers", icon: UserPlus },
+    { href: "/dashboard/campaigns", label: "Campaigns", icon: Megaphone },
+    { href: "/dashboard/coupons", label: "Coupons", icon: Ticket },
+    { href: "/dashboard/theme", label: "Theme Editor", icon: Palette },
+    { href: "/dashboard/domains", label: "Domains", icon: Globe },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ]
 
@@ -91,15 +97,16 @@ function Sidebar({ onClose, user, sellerName, onSignOut }: SidebarProps) {
                     <ThemeToggle />
                 </div>
                 <div className="flex gap-2">
-                    <Link href="/" className="text-xs text-muted-foreground hover:text-foreground font-medium transition-colors">
-                        ← Site
+                    <Link href="/" className="flex-1">
+                        <button className="w-full h-9 rounded-xl text-xs font-bold border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                            ← Site
+                        </button>
                     </Link>
-                    <span className="text-muted-foreground">·</span>
                     <button
                         onClick={onSignOut}
-                        className="text-xs text-red-500 hover:text-red-600 font-medium transition-colors flex items-center gap-1"
+                        className="flex-1 h-9 rounded-xl text-xs font-bold bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/60 border border-red-200 dark:border-red-900/50 transition-colors flex items-center justify-center gap-1.5"
                     >
-                        <LogOut className="h-3 w-3" /> Sign Out
+                        <LogOut className="h-3.5 w-3.5" /> Sign Out
                     </button>
                 </div>
             </div>

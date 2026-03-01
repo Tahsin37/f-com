@@ -124,6 +124,36 @@ CREATE TABLE IF NOT EXISTS workers (
 );
 CREATE INDEX IF NOT EXISTS idx_workers_seller ON workers(seller_id);
 
+-- CUSTOM DOMAINS
+CREATE TABLE IF NOT EXISTS domains (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seller_id          UUID REFERENCES sellers(id) ON DELETE CASCADE,
+  domain             TEXT UNIQUE NOT NULL,
+  verified           BOOLEAN DEFAULT false,
+  verification_token TEXT NOT NULL,
+  created_at         TIMESTAMPTZ DEFAULT now(),
+  verified_at        TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_domains_seller ON domains(seller_id);
+CREATE INDEX IF NOT EXISTS idx_domains_domain ON domains(domain);
+
+-- COUPONS
+CREATE TABLE IF NOT EXISTS coupons (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seller_id          UUID REFERENCES sellers(id) ON DELETE CASCADE,
+  code               TEXT NOT NULL,
+  discount_type      TEXT NOT NULL DEFAULT 'percentage', -- 'percentage' or 'fixed'
+  discount_value     NUMERIC(10,2) NOT NULL,
+  min_order_amount   NUMERIC(10,2) DEFAULT 0,
+  max_uses           INT,
+  uses_count         INT DEFAULT 0,
+  is_active          BOOLEAN DEFAULT true,
+  expires_at         TIMESTAMPTZ,
+  created_at         TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_coupons_seller ON coupons(seller_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_coupons_code_seller ON coupons(seller_id, code);
+
 -- ============================================================
 -- SEED DATA: Demo seller + sample products
 -- ============================================================
@@ -208,6 +238,8 @@ ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blacklist ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pos_sales ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE domains ENABLE ROW LEVEL SECURITY;
+ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
 
 -- Permissive policies for demo (anon can do everything)
 CREATE POLICY "Allow all for sellers" ON sellers FOR ALL USING (true) WITH CHECK (true);
@@ -218,4 +250,6 @@ CREATE POLICY "Allow all for order_items" ON order_items FOR ALL USING (true) WI
 CREATE POLICY "Allow all for blacklist" ON blacklist FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for pos_sales" ON pos_sales FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for workers" ON workers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for domains" ON domains FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for coupons" ON coupons FOR ALL USING (true) WITH CHECK (true);
 
