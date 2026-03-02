@@ -11,29 +11,13 @@ import { useRouter } from "next/navigation"
 import { BarChart3, Eye, EyeOff, ArrowRight, ShieldCheck, Truck, Smartphone, Loader2, Monitor, CheckCircle2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 
-const TEMPLATES = [
-    {
-        id: "starter",
-        name: "Starter",
-        desc: "Clean & minimal — perfect for boutique shops",
-        icon: Smartphone,
-        gradient: "from-violet-500 to-purple-600",
-    },
-    {
-        id: "pro",
-        name: "Pro",
-        desc: "Full e-commerce — Daraz-like with flash deals & search",
-        icon: Monitor,
-        gradient: "from-teal-500 to-emerald-600",
-    },
-]
+
 
 export default function SignUpPage() {
     const [form, setForm] = useState({ name: "", storeName: "", phone: "", email: "", password: "" })
     const [showPassword, setShowPassword] = useState(false)
     const [agreed, setAgreed] = useState(false)
     const [loading, setLoading] = useState(false)
-    const [template, setTemplate] = useState("pro")
     const router = useRouter()
 
     const update = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
@@ -76,7 +60,7 @@ export default function SignUpPage() {
                 email: form.email,
                 plan: "free",
                 settings: {
-                    store_template: template,
+                    store_template: "pro",
                     store_tagline: "Best quality products with fast delivery! 🇧🇩",
                     theme_color: "#0d9488",
                     banner_title: `${form.storeName} — New Arrivals`,
@@ -198,32 +182,7 @@ export default function SignUpPage() {
                             </div>
                         </div>
 
-                        {/* Template Selector */}
-                        <div className="space-y-2 pt-1">
-                            <Label className="font-semibold text-xs">Choose Your Store Design</Label>
-                            <div className="grid grid-cols-2 gap-3">
-                                {TEMPLATES.map(t => (
-                                    <button
-                                        key={t.id}
-                                        type="button"
-                                        onClick={() => setTemplate(t.id)}
-                                        className={`relative rounded-xl border-2 p-3 text-left transition-all ${template === t.id
-                                            ? "border-teal-500 bg-teal-50 dark:bg-teal-950/30 shadow-md"
-                                            : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300"
-                                            }`}
-                                    >
-                                        {template === t.id && (
-                                            <CheckCircle2 className="absolute top-2 right-2 h-4 w-4 text-teal-600" />
-                                        )}
-                                        <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${t.gradient} flex items-center justify-center mb-2`}>
-                                            <t.icon className="h-4 w-4 text-white" />
-                                        </div>
-                                        <p className="text-xs font-bold">{t.name}</p>
-                                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{t.desc}</p>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+
 
                         <div className="flex items-start gap-2.5 py-0.5">
                             <Checkbox id="terms" checked={agreed} onCheckedChange={v => setAgreed(!!v)} className="mt-0.5" />
