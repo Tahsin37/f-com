@@ -280,6 +280,21 @@ export interface PosSale {
     created_at: string
 }
 
+// ─── Reviews ───────────────────────────────────────────────────────────────────
+
+export interface Review {
+    id: string
+    product_id: string
+    seller_id: string
+    order_id?: string
+    customer_name: string
+    rating: number // 1 to 5
+    comment?: string
+    images?: string[]
+    is_published: boolean
+    created_at: string
+}
+
 // ─── Frontend-Specific Types ───────────────────────────────────────────────────
 
 export interface CartItem {

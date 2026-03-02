@@ -64,7 +64,7 @@ export default function WorkerSignInPage() {
     return (
         <div className="min-h-screen flex">
             {/* Left Panel — Branding */}
-            <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 text-white flex-col justify-between p-12">
+            <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-teal-600 via-teal-700 to-teal-900 text-white flex-col justify-between p-12">
                 <div>
                     <Link href="/" className="flex items-center gap-2.5 mb-20">
                         <div className="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
@@ -95,10 +95,10 @@ export default function WorkerSignInPage() {
                 <div className="w-full max-w-md">
                     {/* Mobile Header */}
                     <div className="lg:hidden flex items-center gap-2 mb-10">
-                        <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+                        <div className="h-8 w-8 rounded-lg bg-teal-600 flex items-center justify-center">
                             <BarChart3 className="h-4 w-4 text-white" />
                         </div>
-                        <span className="font-extrabold text-lg text-indigo-600">F-Manager</span>
+                        <span className="font-extrabold text-lg text-teal-600">F-Manager</span>
                     </div>
 
                     <div className="mb-8">
@@ -145,7 +145,7 @@ export default function WorkerSignInPage() {
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm gap-2"
+                            className="w-full h-12 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm gap-2"
                         >
                             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
                             {loading ? "Signing in..." : "Sign In as Worker"}
@@ -155,13 +155,13 @@ export default function WorkerSignInPage() {
                     <div className="mt-8 text-center text-sm text-muted-foreground">
                         <p>
                             Store owner?{" "}
-                            <Link href="/auth/signin" className="text-indigo-600 hover:text-indigo-700 font-bold">
+                            <Link href="/auth/signin" className="text-teal-600 hover:text-teal-700 font-bold">
                                 Sign in here
                             </Link>
                         </p>
                         <p className="mt-2">
                             Don&apos;t have an account?{" "}
-                            <Link href="/auth/signup" className="text-indigo-600 hover:text-indigo-700 font-bold">
+                            <Link href="/auth/signup" className="text-teal-600 hover:text-teal-700 font-bold">
                                 Create store
                             </Link>
                         </p>

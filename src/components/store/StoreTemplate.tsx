@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
     Search, ShoppingCart, ChevronRight, ChevronLeft, Star, Truck,
     ShieldCheck, Award, Zap, Heart, ChevronDown, ChevronUp,
-    Mail, ArrowRight, Facebook, Instagram, Phone, MapPin, Menu, X
+    Mail, ArrowRight, Facebook, Instagram, Phone, MapPin, Menu, X, Filter, SlidersHorizontal
 } from "lucide-react"
 
 /* ─── Types ──────────────────────────────────────────────────────────────────── */
@@ -27,7 +28,7 @@ export interface StoreProduct {
     rating?: number
 }
 
-interface ProTemplateProps {
+interface StoreTemplateProps {
     storeName: string
     tagline: string
     themeColor: string
@@ -35,6 +36,7 @@ interface ProTemplateProps {
     bannerTitle: string
     bannerSubtitle: string
     bannerCta: string
+    campaigns?: any[]
     products: StoreProduct[]
     rawCategories?: string[]
     cartCount: number
@@ -49,11 +51,13 @@ interface ProTemplateProps {
 
 /* ─── Component ──────────────────────────────────────────────────────────────── */
 
-export function ProTemplate({
+export function StoreTemplate({
     storeName, tagline, themeColor, bannerImage, bannerTitle, bannerSubtitle,
-    bannerCta, products, rawCategories = [], cartCount, search, onSearchChange,
+    bannerCta, campaigns, products, rawCategories = [], cartCount, search, onSearchChange,
     onAddToCart, onQuickView, onCartClick, slug, settings = {}
-}: ProTemplateProps) {
+}: StoreTemplateProps) {
+
+    const effectiveProducts = settings.hide_out_of_stock ? products.filter(p => p.inStock) : products
 
     const [selectedCategory, setSelectedCategory] = useState("all")
     const [sortBy, setSortBy] = useState("newest")
@@ -63,13 +67,25 @@ export function ProTemplate({
     const [nlEmail, setNlEmail] = useState("")
     const heroRef = useRef<HTMLDivElement>(null)
 
+    // Filters
+    const [showFilters, setShowFilters] = useState(false)
+    const [minPrice, setMinPrice] = useState<string>("")
+    const [maxPrice, setMaxPrice] = useState<string>("")
+    const [inStockOnly, setInStockOnly] = useState(false)
+
     // Categories
     const categories = ["all", ...rawCategories]
 
     // Filter & sort
-    const filtered = products
+    const filtered = effectiveProducts
         .filter(p => selectedCategory === "all" || p.category === selectedCategory)
         .filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()))
+        .filter(p => {
+            if (minPrice && p.price < Number(minPrice)) return false;
+            if (maxPrice && p.price > Number(maxPrice)) return false;
+            if (inStockOnly && !p.inStock) return false;
+            return true;
+        })
 
     const sorted = [...filtered].sort((a, b) => {
         if (sortBy === "price_asc") return a.price - b.price
@@ -79,13 +95,20 @@ export function ProTemplate({
     })
 
     // Deals = products with discount
-    const deals = products.filter(p => (p.discountPercent ?? 0) > 0).slice(0, 6)
+    const deals = effectiveProducts.filter(p => (p.discountPercent ?? 0) > 0).slice(0, 6)
 
     // Hero slides (use banner + any campaign banners from settings)
     const heroSlides = [
         { image: bannerImage, title: bannerTitle, subtitle: bannerSubtitle, cta: bannerCta },
+        ...(campaigns || []).map(c => ({
+            image: c.banner_image || bannerImage,
+            title: c.name,
+            subtitle: c.description || "Special Campaign Offer",
+            cta: "View Campaign",
+            link: `?campaign=${c.id}`
+        })),
         ...(settings.hero_slides || []),
-    ].filter(s => s.title)
+    ].filter(s => s.image || s.title || s.subtitle)
 
     // Auto-advance hero
     useEffect(() => {
@@ -149,16 +172,24 @@ export function ProTemplate({
                             />
                         </div>
 
-                        {/* Cart */}
-                        <button onClick={onCartClick} className="relative flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm text-white shrink-0" style={{ backgroundColor: themeColor }}>
-                            <ShoppingCart className="h-4 w-4" />
-                            <span className="hidden sm:inline">Cart</span>
-                            {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
-                                    {cartCount}
-                                </span>
-                            )}
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                            {/* Track Order */}
+                            <Link href={`/store/${slug}/track`} className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition">
+                                <Truck className="h-4 w-4" />
+                                Track Order
+                            </Link>
+
+                            {/* Cart */}
+                            <button onClick={onCartClick} className="relative flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm text-white" style={{ backgroundColor: themeColor }}>
+                                <ShoppingCart className="h-4 w-4" />
+                                <span className="hidden sm:inline">Cart</span>
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
                     </div>
 
                     {/* Mobile search */}
@@ -183,8 +214,8 @@ export function ProTemplate({
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
                                 className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold capitalize transition-all whitespace-nowrap ${selectedCategory === cat
-                                        ? "text-white shadow-sm"
-                                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                                    ? "text-white shadow-sm"
+                                    : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                                     }`}
                                 style={selectedCategory === cat ? { backgroundColor: themeColor } : {}}
                             >
@@ -205,12 +236,80 @@ export function ProTemplate({
                     <nav className="space-y-4">
                         <Link href={`/store/${slug}`} className="block text-lg font-semibold py-2 border-b" onClick={() => setMobileMenuOpen(false)}>Home</Link>
                         <Link href={`/store/${slug}/search`} className="block text-lg font-semibold py-2 border-b" onClick={() => setMobileMenuOpen(false)}>Search</Link>
+                        <Link href={`/store/${slug}/track`} className="block text-lg font-semibold py-2 border-b" onClick={() => setMobileMenuOpen(false)}>Track Order</Link>
                         {categories.filter(c => c !== "all").map(cat => (
                             <button key={cat} className="block text-lg py-2 border-b w-full text-left capitalize" onClick={() => { setSelectedCategory(cat); setMobileMenuOpen(false) }}>
                                 {cat}
                             </button>
                         ))}
                     </nav>
+                </div>
+            )}
+
+            {/* Filter Slider Over */}
+            {showFilters && (
+                <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="w-full max-w-sm bg-white dark:bg-[#0a0a0a] h-full shadow-2xl flex flex-col pt-4 overflow-y-auto animate-in slide-in-from-right duration-300">
+                        <div className="flex items-center justify-between px-6 pb-4 border-b border-neutral-100 dark:border-neutral-800">
+                            <h3 className="text-xl font-extrabold flex items-center gap-2"><SlidersHorizontal className="h-5 w-5" /> Filters</h3>
+                            <button onClick={() => setShowFilters(false)} className="h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition">
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-6 flex-1">
+                            {/* Price Range */}
+                            <div className="space-y-3">
+                                <h4 className="font-bold text-sm">Price Range (৳)</h4>
+                                <div className="flex items-center gap-3">
+                                    <Input
+                                        type="number"
+                                        placeholder="Min"
+                                        value={minPrice}
+                                        onChange={e => setMinPrice(e.target.value)}
+                                        className="h-11 rounded-xl bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
+                                    />
+                                    <span className="text-muted-foreground">-</span>
+                                    <Input
+                                        type="number"
+                                        placeholder="Max"
+                                        value={maxPrice}
+                                        onChange={e => setMaxPrice(e.target.value)}
+                                        className="h-11 rounded-xl bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Stock Status */}
+                            <div className="space-y-3">
+                                <h4 className="font-bold text-sm">Availability</h4>
+                                <label className="flex items-center gap-3 p-3 rounded-xl border border-neutral-100 dark:border-neutral-800 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition">
+                                    <input
+                                        type="checkbox"
+                                        checked={inStockOnly}
+                                        onChange={e => setInStockOnly(e.target.checked)}
+                                        className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500"
+                                    />
+                                    <span className="text-sm font-medium select-none">In Stock Only</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div className="p-6 border-t border-neutral-100 dark:border-neutral-800 grid grid-cols-2 gap-3 bg-neutral-50 dark:bg-neutral-900/30">
+                            <Button
+                                variant="outline"
+                                onClick={() => { setMinPrice(""); setMaxPrice(""); setInStockOnly(false); }}
+                                className="h-12 rounded-xl"
+                            >
+                                Clear All
+                            </Button>
+                            <Button
+                                onClick={() => setShowFilters(false)}
+                                className="h-12 rounded-xl text-white font-bold"
+                                style={{ backgroundColor: themeColor }}
+                            >
+                                Show {sorted.length} results
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -222,10 +321,10 @@ export function ProTemplate({
                         {heroSlides.map((slide, i) => (
                             <div key={i} className={`transition-opacity duration-700 ${i === heroSlide ? "opacity-100" : "opacity-0 absolute inset-0"}`}>
                                 <div
-                                    className="relative h-48 sm:h-64 md:h-80 lg:h-96 flex flex-col justify-end p-6 md:p-10"
+                                    className="relative h-48 sm:h-64 md:h-80 lg:h-96 flex flex-col justify-end p-6 md:p-10 bg-cover bg-center"
                                     style={{
-                                        background: slide.image
-                                            ? `linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.1)), url(${slide.image}) center/cover`
+                                        backgroundImage: slide.image
+                                            ? `linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.1)), url('${slide.image}')`
                                             : `linear-gradient(135deg, ${themeColor}, ${themeColor}cc)`,
                                     }}
                                 >
@@ -301,7 +400,7 @@ export function ProTemplate({
                                 <div key={p.id} className="shrink-0 w-40 sm:w-48 group cursor-pointer" onClick={() => onQuickView(p)}>
                                     <div className="relative aspect-square rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                                         {p.images[0] ? (
-                                            <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                                            <Image src={p.images[0]} alt={p.name} fill sizes="(max-width: 640px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-300" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-3xl text-neutral-300">📦</div>
                                         )}
@@ -331,19 +430,31 @@ export function ProTemplate({
                 {/* ═══ ALL PRODUCTS ═══ */}
                 <section className="px-4 mt-8 mb-4">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-extrabold">
+                        <h2 className="text-lg font-extrabold flex-1">
                             {search ? `Results for "${search}"` : selectedCategory !== "all" ? `${selectedCategory}` : "All Products"}
                         </h2>
-                        <select
-                            value={sortBy}
-                            onChange={e => setSortBy(e.target.value)}
-                            className="text-xs border rounded-lg px-3 py-1.5 bg-white dark:bg-neutral-900 font-medium"
-                        >
-                            <option value="newest">Newest</option>
-                            <option value="price_asc">Price: Low → High</option>
-                            <option value="price_desc">Price: High → Low</option>
-                            <option value="name">Name A-Z</option>
-                        </select>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                onClick={() => setShowFilters(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition"
+                            >
+                                <Filter className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Filter</span>
+                                {(minPrice || maxPrice || inStockOnly) && (
+                                    <span className="h-2 w-2 rounded-full bg-red-500 ml-1" />
+                                )}
+                            </button>
+                            <select
+                                value={sortBy}
+                                onChange={e => setSortBy(e.target.value)}
+                                className="text-xs border rounded-lg px-3 py-1.5 bg-white dark:bg-neutral-900 font-medium border-neutral-200 dark:border-neutral-800"
+                            >
+                                <option value="newest">Newest</option>
+                                <option value="price_asc">Price: Low → High</option>
+                                <option value="price_desc">Price: High → Low</option>
+                                <option value="name">Name A-Z</option>
+                            </select>
+                        </div>
                     </div>
 
                     {sorted.length === 0 ? (
@@ -356,7 +467,7 @@ export function ProTemplate({
                                 <div key={p.id} className="group cursor-pointer bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden hover:shadow-lg transition-shadow" onClick={() => onQuickView(p)}>
                                     <div className="relative aspect-square bg-neutral-50 dark:bg-neutral-800 overflow-hidden">
                                         {p.images[0] ? (
-                                            <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                                            <Image src={p.images[0]} alt={p.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-3xl text-neutral-300">📦</div>
                                         )}
@@ -484,12 +595,16 @@ export function ProTemplate({
                             </Link>
                             <p className="text-xs text-muted-foreground leading-relaxed mb-4">{tagline}</p>
                             <div className="flex gap-2">
-                                <a href="#" className="h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition">
-                                    <Facebook className="h-3.5 w-3.5" />
-                                </a>
-                                <a href="#" className="h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition">
-                                    <Instagram className="h-3.5 w-3.5" />
-                                </a>
+                                {settings.footer?.social?.facebook && (
+                                    <a href={settings.footer.social.facebook} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition hover:text-blue-600">
+                                        <Facebook className="h-3.5 w-3.5" />
+                                    </a>
+                                )}
+                                {settings.footer?.social?.instagram && (
+                                    <a href={settings.footer.social.instagram} target="_blank" rel="noopener noreferrer" className="h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-700 transition hover:text-pink-600">
+                                        <Instagram className="h-3.5 w-3.5" />
+                                    </a>
+                                )}
                             </div>
                         </div>
 
@@ -499,6 +614,7 @@ export function ProTemplate({
                             <nav className="space-y-2 text-xs text-muted-foreground">
                                 <Link href={`/store/${slug}`} className="block hover:text-foreground transition">Home</Link>
                                 <Link href={`/store/${slug}/search`} className="block hover:text-foreground transition">Search</Link>
+                                <Link href={`/store/${slug}/track`} className="block hover:text-foreground transition">Track Order</Link>
                                 <button onClick={onCartClick} className="block hover:text-foreground transition">Cart</button>
                             </nav>
                         </div>
@@ -532,6 +648,20 @@ export function ProTemplate({
                     </div>
                 </div>
             </footer>
+
+            {/* ═══ WHATSAPP FAB ═══ */}
+            {settings.whatsapp_number && (
+                <a
+                    href={`https://wa.me/${settings.whatsapp_number.replace(/[^0-9]/g, "")}?text=Hello%20${encodeURIComponent(storeName)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-xl hover:scale-110 transition-transform z-50 animate-bounce"
+                >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-8 w-8">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                    </svg>
+                </a>
+            )}
         </div>
     )
 }

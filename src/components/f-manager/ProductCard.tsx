@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { Badge } from "@/components/ui/badge"
+import Image from "next/image"
 import { ShoppingCart, Eye, Star } from "lucide-react"
 
 export interface Product {
@@ -57,10 +58,12 @@ export function ProductCard({ product, onQuickView, onAddToCart }: ProductCardPr
             {/* Image container */}
             <div className="relative aspect-square overflow-hidden bg-neutral-50 dark:bg-neutral-800">
                 {product.images[0] && !imgError ? (
-                    <img
+                    <Image
                         src={product.images[0]}
                         alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        fill
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
                         onError={() => setImgError(true)}
                     />
                 ) : (

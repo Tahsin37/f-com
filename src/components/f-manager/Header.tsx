@@ -2,7 +2,6 @@
 
 import React, { useState } from "react"
 import { ThemeToggle } from "./ThemeToggle"
-import { LocaleToggle } from "./LocaleToggle"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X, BarChart3, CreditCard, Truck, Smartphone } from "lucide-react"
@@ -44,7 +43,6 @@ export function Header() {
 
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center gap-3">
-                    <LocaleToggle />
                     <ThemeToggle />
                     <Link href="/auth/signin">
                         <Button variant="ghost" size="sm" className="font-semibold rounded-full px-5">
@@ -60,7 +58,6 @@ export function Header() {
 
                 {/* Mobile */}
                 <div className="flex md:hidden items-center gap-2">
-                    <LocaleToggle />
                     <ThemeToggle />
                     <Button variant="ghost" size="icon" onClick={() => setMobileOpen(!mobileOpen)}>
                         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

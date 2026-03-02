@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { useRouter, useSearchParams } from "next/navigation"
+import Image from "next/image"
 import {
     ArrowLeft, Save, Plus, Trash2, Loader2, Upload, X,
     ShoppingBag, BookOpen, Cpu, Apple, MoreHorizontal, ImagePlus
@@ -281,7 +282,7 @@ function AddProductForm() {
                                     <div className="flex flex-wrap gap-3">
                                         {images.map((url, idx) => (
                                             <div key={idx} className="relative group w-20 h-20 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700">
-                                                <img src={url} alt="" className="w-full h-full object-cover" />
+                                                <Image src={url} alt="" fill sizes="80px" className="object-cover" />
                                                 <button
                                                     type="button"
                                                     onClick={() => setImages(images.filter((_, i) => i !== idx))}

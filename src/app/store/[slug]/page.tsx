@@ -7,8 +7,7 @@ import { Loader2, Package } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import type { Product as DBProduct } from "@/lib/types"
 import { sanitizeImageUrls } from "@/lib/imageUtils"
-import { StarterTemplate } from "@/components/store/StarterTemplate"
-import { ProTemplate } from "@/components/store/ProTemplate"
+import { StoreTemplate } from "@/components/store/StoreTemplate"
 import { StoreCartProvider, useStoreCart } from "@/lib/StoreCartContext"
 import { ProductDrawer } from "@/components/f-manager/ProductDrawer"
 import Link from "next/link"
@@ -45,6 +44,7 @@ function StoreInner({ slug }: { slug: string }) {
     const [sellerData, setSellerData] = useState<any>(null)
     const [products, setProducts] = useState<ReturnType<typeof mapProduct>[]>([])
     const [rawCategories, setRawCategories] = useState<string[]>([])
+    const [campaigns, setCampaigns] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState("")
     const [drawerProduct, setDrawerProduct] = useState<ReturnType<typeof mapProduct> | null>(null)
@@ -71,6 +71,17 @@ function StoreInner({ slug }: { slug: string }) {
                 setProducts(pd.map(mapProduct))
                 setRawCategories([...new Set(pd.map((p: any) => p.category as string))])
             }
+
+            const { data: cd } = await supabase
+                .from("campaigns")
+                .select("*")
+                .eq("seller_id", sd.id)
+                .eq("is_active", true)
+
+            if (cd) {
+                setCampaigns(cd.filter(c => new Date(c.end_date) >= new Date()))
+            }
+
             setLoading(false)
         }
         load()
@@ -117,7 +128,6 @@ function StoreInner({ slug }: { slug: string }) {
     }
 
     const settings = sellerData.settings || {}
-    const templateType = settings.store_template || "pro"
     const templateProps = {
         storeName: sellerData.name,
         tagline: settings.store_tagline || "Quality products with fast delivery! 🇧🇩",
@@ -126,6 +136,7 @@ function StoreInner({ slug }: { slug: string }) {
         bannerTitle: settings.banner_title || `${sellerData.name} — New Arrivals`,
         bannerSubtitle: settings.banner_subtitle || "Free delivery on orders above ৳999",
         bannerCta: settings.banner_cta || "Shop Now",
+        campaigns,
         products,
         rawCategories,
         cartCount: itemCount,
@@ -140,11 +151,7 @@ function StoreInner({ slug }: { slug: string }) {
 
     return (
         <>
-            {templateType === "starter" ? (
-                <StarterTemplate {...templateProps} />
-            ) : (
-                <ProTemplate {...templateProps} />
-            )}
+            <StoreTemplate {...templateProps} />
 
             <ProductDrawer
                 product={drawerProduct as any}

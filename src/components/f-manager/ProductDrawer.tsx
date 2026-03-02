@@ -8,6 +8,7 @@ import { Product } from "./ProductCard"
 import { useCart } from "@/lib/CartContext"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Minus, Plus, ShoppingBag, Zap, ChevronLeft, ChevronRight } from "lucide-react"
 
 interface ProductDrawerProps {
@@ -48,10 +49,12 @@ export function ProductDrawer({ product, open, onClose }: ProductDrawerProps) {
                     {/* Image Section */}
                     <div className="relative aspect-square sm:aspect-[4/3] max-h-[50vh] bg-slate-100 dark:bg-neutral-900 overflow-hidden">
                         {product.images[0] ? (
-                            <img
+                            <Image
                                 src={product.images[imageIndex] || product.images[0]}
                                 alt={product.name}
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="(max-width: 640px) 100vw, 50vw"
+                                className="object-cover"
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -118,8 +121,8 @@ export function ProductDrawer({ product, open, onClose }: ProductDrawerProps) {
                                             key={v.id}
                                             onClick={() => setSelectedVariant(v.id)}
                                             className={`px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all active:scale-95 ${selectedVariant === v.id
-                                                    ? "border-teal-500 bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 shadow-sm"
-                                                    : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700"
+                                                ? "border-teal-500 bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 shadow-sm"
+                                                : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700"
                                                 }`}
                                         >
                                             {v.name}

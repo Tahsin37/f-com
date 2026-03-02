@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
     Loader2, Search, FileText, Truck, Package, CheckCircle2,
-    XCircle, Clock, ChevronDown, Phone, MapPin, Calendar, Eye
+    XCircle, Clock, ChevronDown, Phone, MapPin, Calendar, Eye, Printer, Target
 } from "lucide-react"
 import Link from "next/link"
 
@@ -52,6 +53,7 @@ export default function OrdersPage() {
     const [search, setSearch] = useState("")
     const [statusFilter, setStatusFilter] = useState<string>("all")
     const [updatingId, setUpdatingId] = useState<string | null>(null)
+    const [selectedOrders, setSelectedOrders] = useState<string[]>([])
 
     useEffect(() => {
         async function load() {
@@ -88,6 +90,48 @@ export default function OrdersPage() {
             toast.success(`Order updated to ${newStatus}`)
         } catch (err: any) { toast.error(err.message || "Failed to update") }
         finally { setUpdatingId(null) }
+    }
+
+    const toggleOrderSelect = (orderId: string) => {
+        setSelectedOrders(prev => prev.includes(orderId) ? prev.filter(id => id !== orderId) : [...prev, orderId])
+    }
+
+    const toggleSelectAll = () => {
+        if (selectedOrders.length === filteredOrders.length && filteredOrders.length > 0) {
+            setSelectedOrders([])
+        } else {
+            setSelectedOrders(filteredOrders.map(o => o.id))
+        }
+    }
+
+    const handleBulkStatusUpdate = async (newStatus: string) => {
+        if (!selectedOrders.length) return
+        setUpdatingId("bulk")
+        try {
+            await supabase.from("orders").update({ status: newStatus, updated_at: new Date().toISOString() }).in("id", selectedOrders)
+            try {
+                const trackingInserts = selectedOrders.map(id => ({
+                    order_id: id,
+                    status: newStatus,
+                    note: `Bulk status updated to ${newStatus}`,
+                }))
+                await supabase.from("order_tracking").insert(trackingInserts)
+            } catch { /* ignore */ }
+
+            setOrders(prev => prev.map(o => selectedOrders.includes(o.id) ? { ...o, status: newStatus } : o))
+            setSelectedOrders([])
+            toast.success(`${selectedOrders.length} orders marked as ${newStatus}`)
+        } catch (err: any) {
+            toast.error("Bulk update failed")
+        } finally {
+            setUpdatingId(null)
+        }
+    }
+
+    const handleBulkPrint = () => {
+        if (!selectedOrders.length) return
+        const url = `/invoice/bulk?ids=${selectedOrders.join(",")}`
+        window.open(url, "_blank")
     }
 
     const filteredOrders = orders
@@ -162,6 +206,51 @@ export default function OrdersPage() {
                 </div>
             </div>
 
+            {/* Bulk Actions Banner */}
+            {selectedOrders.length > 0 && (
+                <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm animate-in fade-in zoom-in-95 duration-200">
+                    <div className="flex items-center gap-3">
+                        <Badge className="bg-teal-600 text-white font-bold text-sm h-7">{selectedOrders.length} selected</Badge>
+                        <span className="text-sm font-medium text-teal-800 dark:text-teal-300">Choose an action:</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <select
+                            onChange={e => {
+                                if (e.target.value) handleBulkStatusUpdate(e.target.value);
+                                e.target.value = ""; // reset
+                            }}
+                            disabled={updatingId === "bulk"}
+                            className="h-9 px-3 py-1 rounded-lg text-sm border-teal-200 bg-white dark:bg-neutral-800 font-semibold cursor-pointer outline-none focus:ring-2 focus:ring-teal-600"
+                        >
+                            <option value="">Status Update...</option>
+                            <option value="processing">Mark Processing</option>
+                            <option value="shipped">Mark Shipped</option>
+                            <option value="delivered">Mark Delivered</option>
+                        </select>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 border-teal-200 dark:border-teal-800 hover:bg-teal-100 dark:hover:bg-teal-900/40 text-teal-700 dark:text-teal-300 gap-2 font-bold"
+                            onClick={handleBulkPrint}
+                        >
+                            <Printer className="h-4 w-4" /> Print Invoices
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {/* Select All Row */}
+            {filteredOrders.length > 0 && (
+                <div className="flex items-center gap-2 px-2 pb-1">
+                    <Checkbox
+                        checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
+                        onCheckedChange={toggleSelectAll}
+                        className="rounded"
+                    />
+                    <span className="text-sm text-muted-foreground font-medium cursor-pointer" onClick={toggleSelectAll}>Select All</span>
+                </div>
+            )}
+
             {/* Orders List */}
             {filteredOrders.length === 0 ? (
                 <div className="text-center py-16">
@@ -175,24 +264,33 @@ export default function OrdersPage() {
                             <CardContent className="p-4">
                                 <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
                                     {/* Order Info */}
-                                    <div className="space-y-1 flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="font-extrabold text-sm text-teal-600">{order.order_number}</span>
-                                            <Badge className={`text-[10px] font-bold gap-1 ${STATUS_COLORS[order.status] || ""}`}>
-                                                {STATUS_ICONS[order.status]} {order.status}
-                                            </Badge>
-                                            {order.otp_verified && (
-                                                <Badge className="bg-green-100 text-green-700 text-[10px] gap-0.5">
-                                                    <CheckCircle2 className="h-2.5 w-2.5" /> OTP ✓
+                                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                                        <div className="pt-1">
+                                            <Checkbox
+                                                checked={selectedOrders.includes(order.id)}
+                                                onCheckedChange={() => toggleOrderSelect(order.id)}
+                                                className="rounded"
+                                            />
+                                        </div>
+                                        <div className="space-y-1 flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span className="font-extrabold text-sm text-teal-600">{order.order_number}</span>
+                                                <Badge className={`text-[10px] font-bold gap-1 ${STATUS_COLORS[order.status] || ""}`}>
+                                                    {STATUS_ICONS[order.status]} {order.status}
                                                 </Badge>
-                                            )}
+                                                {order.otp_verified && (
+                                                    <Badge className="bg-green-100 text-green-700 text-[10px] gap-0.5">
+                                                        <CheckCircle2 className="h-2.5 w-2.5" /> OTP ✓
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                                                <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {order.customer_name} — {order.customer_phone}</span>
+                                                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {order.delivery_area === "outside" ? "Outside Dhaka" : "Dhaka"}</span>
+                                                <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(order.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground truncate max-w-xs"><MapPin className="h-3 w-3 inline mr-1" />{order.customer_address}</p>
                                         </div>
-                                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                                            <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {order.customer_name} — {order.customer_phone}</span>
-                                            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {order.delivery_area === "outside" ? "Outside Dhaka" : "Dhaka"}</span>
-                                            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(order.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground truncate max-w-xs"><MapPin className="h-3 w-3 inline mr-1" />{order.customer_address}</p>
                                     </div>
 
                                     {/* Price + Actions */}

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import Image from "next/image"
 import {
     Plus, Loader2, Trash2, Calendar, Megaphone, Edit, ToggleLeft, ToggleRight, ImagePlus, Upload
 } from "lucide-react"
@@ -150,8 +151,8 @@ export default function CampaignManagerPage() {
                         return (
                             <Card key={c.id} className="overflow-hidden">
                                 {c.banner_image && (
-                                    <div className="h-32 bg-neutral-100 dark:bg-neutral-800">
-                                        <img src={c.banner_image} alt="" className="w-full h-full object-cover" />
+                                    <div className="h-32 relative bg-neutral-100 dark:bg-neutral-800">
+                                        <Image src={c.banner_image} alt="" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
                                     </div>
                                 )}
                                 <CardContent className="p-4 space-y-3">

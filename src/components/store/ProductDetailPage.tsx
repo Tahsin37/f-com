@@ -3,10 +3,12 @@
 import React, { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import Image from "next/image"
 import {
     ChevronLeft, ChevronRight, ShoppingCart, Zap, Truck,
     ShieldCheck, Heart, Share2, Minus, Plus, Star, ArrowLeft
 } from "lucide-react"
+import { CustomerReviews } from "./CustomerReviews"
 
 interface Variant {
     id: string
@@ -17,6 +19,7 @@ interface Variant {
 
 interface PDPProduct {
     id: string
+    seller_id: string
     name: string
     category: string
     description?: string
@@ -127,10 +130,12 @@ export function ProductDetailPage({
                             onTouchEnd={handleTouchEnd}
                         >
                             {images[currentImage] ? (
-                                <img
+                                <Image
                                     src={images[currentImage]}
                                     alt={product.name}
-                                    className="w-full h-full object-cover transition-opacity duration-300"
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    className="object-cover transition-opacity duration-300"
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-5xl text-neutral-300">📦</div>
@@ -175,9 +180,9 @@ export function ProductDetailPage({
                             <div className="flex gap-2 mt-3 overflow-x-auto scrollbar-hide">
                                 {images.map((img, i) => (
                                     <button key={i} onClick={() => setCurrentImage(i)}
-                                        className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === currentImage ? "border-current" : "border-transparent opacity-60"}`}
+                                        className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all relative ${i === currentImage ? "border-current" : "border-transparent opacity-60"}`}
                                         style={i === currentImage ? { borderColor: themeColor } : {}}>
-                                        {img ? <img src={img} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-neutral-200 dark:bg-neutral-700" />}
+                                        {img ? <Image src={img} alt="" fill sizes="64px" className="object-cover" /> : <div className="w-full h-full bg-neutral-200 dark:bg-neutral-700" />}
                                     </button>
                                 ))}
                             </div>
@@ -316,6 +321,8 @@ export function ProductDetailPage({
                                 <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{product.description}</p>
                             </div>
                         )}
+
+                        <CustomerReviews productId={product.id} sellerId={product.seller_id} themeColor={themeColor} />
                     </div>
                 </div>
             </div>

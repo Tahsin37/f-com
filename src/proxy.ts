@@ -77,29 +77,66 @@ export default async function proxy(req: NextRequest) {
 
         const sellerData = domainData?.sellers as any
 
+        // Security headers for all responses
+        const response = NextResponse.next()
+
+        // Strict Transport Security (HSTS) - Enforce HTTPS
+        response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
+
+        // X-Content-Type-Options - Prevent MIME-type sniffing
+        response.headers.set("X-Content-Type-Options", "nosniff")
+
+        // X-Frame-Options - Prevent clickjacking
+        response.headers.set("X-Frame-Options", "DENY")
+
+        // X-XSS-Protection - Legacy XSS filter fallback
+        response.headers.set("X-XSS-Protection", "1; mode=block")
+
+        // Referrer-Policy - Control referrer information sent
+        response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
+
+        // Content-Security-Policy (CSP) - Mitigate XSS and data injection
+        // Note: 'unsafe-inline' and 'unsafe-eval' are often required by Next.js in dev/build, consider refining for strict prod
+        const cspHeader = `
+      default-src 'self';
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.vercel-scripts.com https://*.vercel-insights.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' blob: data: https://*.supabase.co https://images.unsplash.com;
+      font-src 'self' data: https://fonts.gstatic.com;
+      connect-src 'self' https://*.supabase.co;
+      frame-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    `.replace(/\s{2,}/g, ' ').trim()
+
+        response.headers.set("Content-Security-Policy", cspHeader)
+
+        // Append headers to rewrites as well if a custom domain was matched
         if (domainData?.verified && sellerData?.slug) {
-            // Rewrite the request to the seller's storefront
-            // Example: customdomain.com/product/123 -> /store/seller-slug/product/123
             let rewritePath = `/store/${sellerData.slug}${pathname === "/" ? "" : pathname}`
-            // Prevent double proxying if pathname somehow already includes /store/
             if (pathname.startsWith(`/store/`)) {
                 rewritePath = pathname
             }
             const rewriteUrl = new URL(rewritePath, req.url)
-            // Preserve search params
             rewriteUrl.search = url.search
-            return NextResponse.rewrite(rewriteUrl)
+
+            const rewriteResponse = NextResponse.rewrite(rewriteUrl)
+            // Copy security headers to the rewrite response
+            rewriteResponse.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
+            rewriteResponse.headers.set("X-Content-Type-Options", "nosniff")
+            rewriteResponse.headers.set("X-Frame-Options", "DENY")
+            rewriteResponse.headers.set("X-XSS-Protection", "1; mode=block")
+            rewriteResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
+            rewriteResponse.headers.set("Content-Security-Policy", cspHeader)
+
+            return rewriteResponse
         }
+
+        return response
     }
 
-    // Security headers for all responses
-    const response = NextResponse.next()
-    response.headers.set("X-Content-Type-Options", "nosniff")
-    response.headers.set("X-Frame-Options", "DENY")
-    response.headers.set("X-XSS-Protection", "1; mode=block")
-    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin")
-
-    return response
+    return NextResponse.next()
 }
 
 export const config = {

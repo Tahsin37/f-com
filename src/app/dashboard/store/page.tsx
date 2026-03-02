@@ -10,7 +10,7 @@ import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 import {
     Save, Store, Image as ImageIcon, Palette, Eye, ExternalLink,
-    Loader2, Paintbrush, AlignLeft, Type, Tag
+    Loader2, Paintbrush, AlignLeft, Type, Tag, Upload
 } from "lucide-react"
 import Link from "next/link"
 
@@ -52,6 +52,7 @@ export default function StoreBuilderPage() {
     const [settings, setSettings] = useState<StoreSettings>(DEFAULT)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+    const [uploadingBanner, setUploadingBanner] = useState(false)
 
     useEffect(() => {
         async function load() {
@@ -96,6 +97,25 @@ export default function StoreBuilderPage() {
             toast.error(err.message || "Failed to save")
         } finally {
             setSaving(false)
+        }
+    }
+
+    const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setUploadingBanner(true)
+        try {
+            const ext = file.name.split('.').pop()
+            const fileName = `banner-${Date.now()}.${ext}`
+            const { data, error } = await supabase.storage.from("product-images").upload(`banners/${fileName}`, file, { cacheControl: "3600", upsert: false })
+            if (error) throw error
+            const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(data.path)
+            update("banner_image", publicUrl)
+            toast.success("Banner uploaded")
+        } catch (err: any) {
+            toast.error(err.message || "Failed to upload banner")
+        } finally {
+            setUploadingBanner(false)
         }
     }
 
@@ -213,15 +233,23 @@ export default function StoreBuilderPage() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="font-semibold text-sm flex items-center gap-1.5">
-                                    <ImageIcon className="h-3.5 w-3.5" /> Banner Image URL
+                                    <ImageIcon className="h-3.5 w-3.5" /> Banner Image
                                 </Label>
-                                <Input
-                                    value={settings.banner_image}
-                                    onChange={e => update("banner_image", e.target.value)}
-                                    placeholder="https://images.unsplash.com/photo-..."
-                                    className="h-11 rounded-xl font-mono text-sm"
-                                />
-                                <p className="text-xs text-muted-foreground">Use any image URL (Unsplash, your CDN, etc). Leave blank to use a gradient.</p>
+                                <div className="flex flex-col gap-4">
+                                    {settings.banner_image && (
+                                        <div className="relative w-full aspect-[21/9] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                                            <img src={settings.banner_image} alt="Banner Preview" className="absolute inset-0 w-full h-full object-cover" />
+                                            <Button size="sm" variant="destructive" className="absolute top-2 right-2" onClick={() => update("banner_image", "")}>Remove</Button>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <Button type="button" variant="outline" className="relative h-11 px-4 rounded-xl cursor-pointer" disabled={uploadingBanner}>
+                                            <input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleBannerUpload} disabled={uploadingBanner} />
+                                            {uploadingBanner ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                                            {uploadingBanner ? "Uploading..." : settings.banner_image ? "Change Image" : "Upload Banner Image"}
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">

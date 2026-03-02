@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import {
     Loader2, ArrowLeft, Trash2, Minus, Plus, Truck, ShieldCheck,
     CheckCircle2, MapPin, CreditCard, Phone, User, FileText
@@ -132,7 +133,7 @@ function CheckoutInner({ slug }: { slug: string }) {
                 payment_method: payMethod,
                 status: "pending",
                 otp_code: otpCode,
-                otp_verified: false,
+                otp_verified: true, // Auto-verify for now since SMS isn't connected
             }).select("id").single()
 
             if (orderErr) throw orderErr
@@ -170,9 +171,10 @@ function CheckoutInner({ slug }: { slug: string }) {
             } catch { /* tracking table may not exist yet */ }
 
             clearCart()
-            // Show OTP step — customer must verify before order is confirmed
-            toast.info(`Your OTP is: ${otpCode}`, { duration: 30000, description: "Enter this code to confirm your order" })
-            setOtpStep({ orderNumber, orderId: order.id, demoOtp: otpCode })
+
+            // Auto complete order instead of showing OTP step
+            setSuccess({ orderId: order.id, orderNumber })
+
         } catch (err: any) {
             toast.error(err.message || "Failed to place order")
         } finally {
@@ -300,6 +302,36 @@ function CheckoutInner({ slug }: { slug: string }) {
                 <form className="flex flex-col lg:flex-row gap-8 lg:gap-12" onSubmit={e => e.preventDefault()}>
                     {/* ── LEFT COLUMN: DELIVERY ── */}
                     <div className="flex-1 space-y-6">
+                        {/* Order Summary */}
+                        <div className="bg-white dark:bg-neutral-900/50 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm">
+                            <h2 className="text-base font-bold mb-4">Order Summary ({items.length} items)</h2>
+                            {items.length === 0 ? (
+                                <p className="text-sm text-muted-foreground py-8 text-center bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-dashed">Your cart is empty</p>
+                            ) : (
+                                <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-700">
+                                    {items.map((item, i) => (
+                                        <div key={i} className="flex gap-4 items-center bg-neutral-50 dark:bg-neutral-800/50 p-3 rounded-xl">
+                                            <div className="h-16 w-16 relative rounded-xl bg-white dark:bg-neutral-800 overflow-hidden shrink-0 shadow-sm">
+                                                {item.image ? <Image src={item.image} alt="" fill sizes="64px" className="object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl">📦</div>}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-bold truncate">{item.name}</p>
+                                                {item.variant_label && <p className="text-xs font-medium text-muted-foreground mt-0.5">{item.variant_label}</p>}
+                                                <p className="text-sm font-extrabold mt-1" style={{ color: themeColor }}>৳{item.price.toLocaleString()}</p>
+                                            </div>
+                                            <div className="flex bg-white dark:bg-neutral-800 items-center gap-1 shrink-0 rounded-lg border shadow-sm p-1">
+                                                <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant_id)} className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Minus className="h-3 w-3" /></button>
+                                                <span className="text-sm font-bold w-6 text-center">{item.quantity}</span>
+                                                <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant_id)} className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Plus className="h-3 w-3" /></button>
+                                            </div>
+                                            <button type="button" onClick={() => removeItem(item.id, item.variant_id)} className="h-10 w-10 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors ml-1"><Trash2 className="h-4 w-4" /></button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Delivery Info */}
                         <div className="bg-white dark:bg-neutral-900/50 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-6">
                             <h2 className="text-lg font-bold flex items-center gap-2 pb-2 border-b border-neutral-100 dark:border-neutral-800"><MapPin className="h-5 w-5" style={{ color: themeColor }} /> Delivery Information</h2>
 
@@ -339,35 +371,6 @@ function CheckoutInner({ slug }: { slug: string }) {
                     {/* ── RIGHT COLUMN: SUMMARY & PAYMENT ── */}
                     <div className="w-full lg:w-[450px] xl:w-[480px] shrink-0 space-y-6">
 
-                        {/* Order Summary */}
-                        <div className="bg-white dark:bg-neutral-900/50 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm">
-                            <h2 className="text-base font-bold mb-4">Order Summary ({items.length} items)</h2>
-                            {items.length === 0 ? (
-                                <p className="text-sm text-muted-foreground py-8 text-center bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-dashed">Your cart is empty</p>
-                            ) : (
-                                <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-700">
-                                    {items.map((item, i) => (
-                                        <div key={i} className="flex gap-4 items-center bg-neutral-50 dark:bg-neutral-800/50 p-3 rounded-xl">
-                                            <div className="h-16 w-16 rounded-xl bg-white dark:bg-neutral-800 overflow-hidden shrink-0 shadow-sm">
-                                                {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl">📦</div>}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-bold truncate">{item.name}</p>
-                                                {item.variant_label && <p className="text-xs font-medium text-muted-foreground mt-0.5">{item.variant_label}</p>}
-                                                <p className="text-sm font-extrabold mt-1" style={{ color: themeColor }}>৳{item.price.toLocaleString()}</p>
-                                            </div>
-                                            <div className="flex bg-white dark:bg-neutral-800 items-center gap-1 shrink-0 rounded-lg border shadow-sm p-1">
-                                                <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant_id)} className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Minus className="h-3 w-3" /></button>
-                                                <span className="text-sm font-bold w-6 text-center">{item.quantity}</span>
-                                                <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant_id)} className="h-8 w-8 rounded-md flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"><Plus className="h-3 w-3" /></button>
-                                            </div>
-                                            <button type="button" onClick={() => removeItem(item.id, item.variant_id)} className="h-10 w-10 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors ml-1"><Trash2 className="h-4 w-4" /></button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
                         {/* Payment Method */}
                         <div className="bg-white dark:bg-neutral-900/50 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm space-y-4">
                             <h2 className="text-base font-bold flex items-center gap-2"><CreditCard className="h-5 w-5" style={{ color: themeColor }} /> Payment Method</h2>
@@ -378,7 +381,7 @@ function CheckoutInner({ slug }: { slug: string }) {
                                     { value: "nagad" as const, label: "Nagad", icon: "📱" },
                                 ]).map(m => (
                                     <button key={m.value} onClick={() => setPayMethod(m.value)} type="button"
-                                        className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${payMethod === m.value ? "bg-white shadow-sm" : "bg-neutral-50 dark:bg-neutral-900 border-transparent hover:border-neutral-200"}`}
+                                        className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${payMethod === m.value ? "bg-white dark:bg-neutral-800 shadow-sm" : "bg-neutral-50 dark:bg-neutral-900 border-transparent hover:border-neutral-200"}`}
                                         style={payMethod === m.value ? { borderColor: themeColor } : {}}>
                                         <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 ${payMethod === m.value ? "" : "border-neutral-300"}`} style={payMethod === m.value ? { borderColor: themeColor } : {}}>
                                             {payMethod === m.value && <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: themeColor }} />}

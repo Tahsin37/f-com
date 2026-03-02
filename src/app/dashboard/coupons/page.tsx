@@ -95,7 +95,7 @@ export default function CouponsPage() {
     if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-teal-600" /></div>
 
     return (
-        <div className="space-y-6 max-w-5xl">
+        <div className="space-y-6">
             <div>
                 <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">Coupons & Discounts</h1>
                 <p className="text-muted-foreground text-sm mt-1">Create promo codes to offer discounts to your customers.</p>

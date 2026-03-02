@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import {
     Search, Loader2, SlidersHorizontal, ShoppingCart, ArrowLeft,
     Star, X, ChevronDown
@@ -172,7 +173,7 @@ function SearchInner({ slug }: { slug: string }) {
                                 className="group bg-white dark:bg-neutral-900 rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden hover:shadow-lg transition-shadow">
                                 <div className="relative aspect-square bg-neutral-50 dark:bg-neutral-800 overflow-hidden">
                                     {p.images[0] ? (
-                                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                                        <Image src={p.images[0]} alt={p.name} fill sizes="(max-width: 640px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-3xl text-neutral-300">📦</div>
                                     )}

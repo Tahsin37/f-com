@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import Link from "next/link"
+import Image from "next/image"
 import { Plus, Search, Pencil, Trash2, Package, Loader2, Eye, EyeOff } from "lucide-react"
 
 export default function ProductsPage() {
@@ -131,9 +132,9 @@ export default function ProductsPage() {
                             <Card key={p.id} className={`border ${!p.is_active ? 'opacity-60' : ''}`}>
                                 <CardContent className="p-4 flex items-center gap-4">
                                     {/* Thumbnail */}
-                                    <div className="h-16 w-16 rounded-xl bg-slate-100 dark:bg-neutral-800 overflow-hidden shrink-0">
+                                    <div className="h-16 w-16 relative rounded-xl bg-slate-100 dark:bg-neutral-800 overflow-hidden shrink-0">
                                         {p.images?.[0] ? (
-                                            <img src={p.images[0]} alt={p.name} className="h-full w-full object-cover" />
+                                            <Image src={p.images[0]} alt={p.name} fill sizes="64px" className="object-cover" />
                                         ) : (
                                             <div className="h-full w-full flex items-center justify-center">
                                                 <Package className="h-6 w-6 text-muted-foreground" />

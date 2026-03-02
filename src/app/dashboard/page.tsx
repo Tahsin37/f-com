@@ -131,15 +131,27 @@ export default function DashboardPage() {
         return Object.entries(cats).map(([name, value]) => ({ name, value, color: colors[name] || "#94a3b8" }))
     }, [products])
 
-    // Group orders by month for revenue chart
+    // Group orders by day for last 30 days
     const revenueData = useMemo(() => {
-        const months: Record<string, number> = {}
+        const days: Record<string, number> = {}
+
+        // Initialize last 30 days with 0
+        for (let i = 29; i >= 0; i--) {
+            const d = new Date()
+            d.setDate(d.getDate() - i)
+            const key = d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+            days[key] = 0
+        }
+
         orders.filter(o => o.status !== "cancelled").forEach(o => {
             const d = new Date(o.created_at)
-            const key = d.toLocaleString("en", { month: "short" })
-            months[key] = (months[key] || 0) + Number(o.total || 0)
+            const key = d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+            if (days[key] !== undefined) {
+                days[key] += Number(o.total || 0)
+            }
         })
-        return Object.entries(months).map(([month, revenue]) => ({ month, revenue }))
+
+        return Object.entries(days).map(([date, revenue]) => ({ date, revenue }))
     }, [orders])
 
     // ─── Inventory Alerts ──────────────────────────────────────────
@@ -229,23 +241,32 @@ export default function DashboardPage() {
             {/* Charts Row */}
             <div className="grid lg:grid-cols-5 gap-6">
                 {/* Revenue Chart */}
-                <Card className="lg:col-span-3 border-transparent">
+                <Card className="lg:col-span-3 border-transparent shadow-sm hover:shadow-md transition-shadow">
                     <CardHeader>
                         <CardTitle className="text-base font-bold flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-teal-600" /> Revenue (৳)
+                            <TrendingUp className="h-4 w-4 text-teal-600" /> Revenue (Last 30 Days)
                         </CardTitle>
-                        <CardDescription>Revenue by month</CardDescription>
+                        <CardDescription>Daily sales performance</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {revenueData.length > 0 ? (
                             <ResponsiveContainer width="100%" height={260}>
-                                <BarChart data={revenueData}>
-                                    <CartesianGrid strokeDasharray="3 3" className="stroke-neutral-200 dark:stroke-neutral-800" />
-                                    <XAxis dataKey="month" className="text-xs" tick={{ fontSize: 12 }} />
-                                    <YAxis className="text-xs" tick={{ fontSize: 11 }} tickFormatter={(v) => `৳${(v / 1000).toFixed(0)}k`} />
-                                    <Tooltip formatter={(v) => [`৳${Number(v).toLocaleString()}`, "Revenue"]} />
-                                    <Bar dataKey="revenue" fill="#14b8a6" radius={[6, 6, 0, 0]} />
-                                </BarChart>
+                                <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-neutral-200 dark:stroke-neutral-800" />
+                                    <XAxis dataKey="date" className="text-[10px] text-muted-foreground" tickLine={false} axisLine={false} minTickGap={20} />
+                                    <YAxis className="text-[10px] text-muted-foreground" tickLine={false} axisLine={false} tickFormatter={(v) => `৳${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`} />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '12px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        formatter={(v: any) => [`৳${Number(v).toLocaleString()}`, "Revenue"]}
+                                    />
+                                    <Area type="monotone" dataKey="revenue" stroke="#14b8a6" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                                </AreaChart>
                             </ResponsiveContainer>
                         ) : (
                             <div className="flex items-center justify-center h-60 text-muted-foreground text-sm">No order data yet</div>

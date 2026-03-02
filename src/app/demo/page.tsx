@@ -18,29 +18,6 @@ const STEPS = [
     { icon: Share2, title: "Share & Sell", desc: "Share your store link on Facebook, Instagram, or anywhere." },
 ]
 
-const TEMPLATES = [
-    {
-        id: "starter",
-        name: "Starter",
-        subtitle: "Clean & Minimalistic",
-        desc: "Perfect for boutique shops and single-category sellers. Clean layout, big product images, smooth animations.",
-        icon: Smartphone,
-        gradient: "from-violet-500 to-purple-600",
-        features: ["Single-column layout", "Large hero image", "Elegant product cards", "Smooth animations", "Minimal footer"],
-        preview: "/store/sifr-style",
-    },
-    {
-        id: "pro",
-        name: "Pro",
-        subtitle: "Full E-Commerce",
-        desc: "Daraz-level storefront for multi-category, high-volume sellers. Everything a real e-commerce site needs.",
-        icon: Monitor,
-        gradient: "from-teal-500 to-emerald-600",
-        features: ["Sticky nav + search bar", "Category navigation", "Flash deals strip", "5-column grid", "Sort & filter", "Star ratings"],
-        preview: "/store/sifr-style",
-    },
-]
-
 export default function DemoPage() {
     return (
         <div className="min-h-screen flex flex-col bg-white dark:bg-black">
@@ -101,55 +78,75 @@ export default function DemoPage() {
                 </div>
             </section>
 
-            {/* Template Previews */}
+            {/* Customizability Showcase */}
             <section className="py-20 md:py-28">
                 <div className="container px-4 md:px-6">
                     <div className="text-center mb-14">
                         <div className="inline-flex items-center gap-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold px-4 py-2 rounded-full mb-4">
-                            <Layout className="h-3.5 w-3.5" /> Choose Your Design
+                            <Sparkles className="h-3.5 w-3.5" /> Infinite Customizability
                         </div>
-                        <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Two Premium Templates</h2>
-                        <p className="text-muted-foreground max-w-lg mx-auto">
-                            Pick the design that fits your brand. You can always switch later from your dashboard.
+                        <h2 className="text-3xl md:text-4xl font-extrabold mb-4">Your Brand, Your Rules</h2>
+                        <p className="text-muted-foreground max-w-2xl mx-auto">
+                            Design a storefront that perfectly matches your brand identity. F-Manager gives you complete control over every pixel without writing a single line of code.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                        {TEMPLATES.map(t => (
-                            <div key={t.id} className="group bg-white dark:bg-neutral-900 rounded-3xl border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-sm hover:shadow-2xl transition-all">
-                                {/* Gradient Header */}
-                                <div className={`bg-gradient-to-br ${t.gradient} p-8 text-white relative overflow-hidden`}>
-                                    <div className="absolute top-4 right-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-                                    <t.icon className="h-10 w-10 mb-4 relative z-10" />
-                                    <h3 className="text-2xl font-extrabold relative z-10">{t.name}</h3>
-                                    <p className="text-white/80 text-sm font-medium relative z-10">{t.subtitle}</p>
-                                </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto items-center">
+                        {/* Left Side: Visual/UI Representation */}
+                        <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-neutral-200/50 dark:border-neutral-800/50 bg-neutral-100 dark:bg-neutral-900 aspect-[4/3] group">
+                            {/* Decorative background gradients */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-teal-400/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-400/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
-                                <div className="p-6">
-                                    <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{t.desc}</p>
-                                    <div className="space-y-2 mb-6">
-                                        {t.features.map(f => (
-                                            <div key={f} className="flex items-center gap-2 text-xs">
-                                                <CheckCircle2 className="h-3.5 w-3.5 text-teal-600 shrink-0" />
-                                                <span className="text-foreground font-medium">{f}</span>
-                                            </div>
-                                        ))}
+                            <div className="absolute inset-x-8 top-8 bottom-0 bg-white dark:bg-[#0a0a0a] rounded-t-2xl shadow-xl border border-b-0 border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col transition-transform duration-500 group-hover:-translate-y-2">
+                                {/* Mockup Header */}
+                                <div className="h-10 border-b border-neutral-100 dark:border-neutral-800 flex items-center px-4 gap-2 bg-slate-50 dark:bg-neutral-900/50">
+                                    <div className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                                    <div className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+                                    <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
+                                </div>
+                                {/* Mockup Content */}
+                                <div className="p-6 space-y-4 flex-1 bg-gradient-to-b from-white to-slate-50 dark:from-[#0a0a0a] dark:to-neutral-950">
+                                    <div className="h-8 w-full bg-teal-600/10 rounded-lg flex items-center px-4">
+                                        <div className="h-2 w-24 bg-teal-600 rounded-full" />
                                     </div>
-                                    <div className="flex gap-3">
-                                        <Link href={t.preview} target="_blank" className="flex-1">
-                                            <Button variant="outline" className="w-full rounded-xl text-xs font-bold gap-1.5">
-                                                <Sparkles className="h-3.5 w-3.5" /> Preview
-                                            </Button>
-                                        </Link>
-                                        <Link href="/auth/signup" className="flex-1">
-                                            <Button className="w-full rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white gap-1.5">
-                                                Use This <ArrowRight className="h-3.5 w-3.5" />
-                                            </Button>
-                                        </Link>
+                                    <div className="flex gap-4">
+                                        <div className="h-24 w-1/3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl" />
+                                        <div className="h-24 w-1/3 bg-slate-100 dark:bg-neutral-800/50 rounded-xl" />
+                                        <div className="h-24 w-1/3 bg-slate-100 dark:bg-neutral-800/50 rounded-xl" />
                                     </div>
+                                    <div className="h-4 w-3/4 bg-neutral-200 dark:bg-neutral-800 rounded-full mt-4" />
+                                    <div className="h-4 w-1/2 bg-neutral-100 dark:bg-neutral-800/50 rounded-full" />
                                 </div>
                             </div>
-                        ))}
+                        </div>
+
+                        {/* Right Side: Features List */}
+                        <div className="space-y-8">
+                            {[
+                                { title: "Theme Colors & Branding", desc: "Select your primary HEX color and we automatically generate a beautiful, accessible color palette for your entire store.", icon: Layout, color: "text-blue-500", bg: "bg-blue-500/10" },
+                                { title: "Dynamic Hero Sliders", desc: "Upload promotional banners, announce flash sales with countdowns, and set custom call-to-action buttons.", icon: Sparkles, color: "text-amber-500", bg: "bg-amber-500/10" },
+                                { title: "Smart Announcement Bars", desc: "Highlight free shipping thresholds or coupon codes globally across the top of every page.", icon: Zap, color: "text-teal-500", bg: "bg-teal-500/10" },
+                                { title: "Custom Social Footers", desc: "Link your Facebook page, Instagram profile, and establish trust with embedded contact information.", icon: Share2, color: "text-purple-500", bg: "bg-purple-500/10" },
+                            ].map((feat, i) => (
+                                <div key={i} className="flex gap-4">
+                                    <div className={`shrink-0 h-12 w-12 rounded-2xl flex items-center justify-center ${feat.bg} ${feat.color}`}>
+                                        <feat.icon className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold mb-1">{feat.title}</h3>
+                                        <p className="text-muted-foreground text-sm leading-relaxed">{feat.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="pt-4">
+                                <Link href="/auth/signup">
+                                    <Button className="rounded-xl font-bold px-8 h-12 bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:text-black dark:hover:bg-neutral-200">
+                                        Customize Your Store <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

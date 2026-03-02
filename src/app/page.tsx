@@ -2,7 +2,6 @@ import { Header } from "@/components/f-manager/Header";
 import { Hero } from "@/components/f-manager/Hero";
 import { TestimonialSection } from "@/components/f-manager/TestimonialSection";
 import { FeaturesSection } from "@/components/f-manager/FeaturesSection";
-import { DemoSelectorSection } from "@/components/f-manager/DemoSelectorSection";
 import { TrustSection } from "@/components/f-manager/TrustSection";
 import { PricingSection } from "@/components/f-manager/PricingSection";
 import { FAQSection } from "@/components/f-manager/FAQSection";
@@ -16,7 +15,6 @@ export default function Home() {
         <Hero />
         <TestimonialSection />
         <FeaturesSection />
-        <DemoSelectorSection />
         <PricingSection />
         <FAQSection />
       </main>
