@@ -17,8 +17,18 @@ export default function SignUpPage() {
     const [form, setForm] = useState({ name: "", storeName: "", phone: "", email: "", password: "" })
     const [showPassword, setShowPassword] = useState(false)
     const [agreed, setAgreed] = useState(false)
+    const [rememberMe, setRememberMe] = useState(false)
     const [loading, setLoading] = useState(false)
     const router = useRouter()
+
+    // Hydrate saved email
+    React.useEffect(() => {
+        const saved = localStorage.getItem("fmanager_saved_email")
+        if (saved) {
+            setForm(f => ({ ...f, email: saved }))
+            setRememberMe(true)
+        }
+    }, [])
 
     const update = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
@@ -36,6 +46,13 @@ export default function SignUpPage() {
 
         setLoading(true)
         try {
+            // Save email for convenience if remember me is checked
+            if (rememberMe) {
+                localStorage.setItem("fmanager_saved_email", form.email)
+            } else {
+                localStorage.removeItem("fmanager_saved_email")
+            }
+
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: form.email,
                 password: form.password,
@@ -193,6 +210,10 @@ export default function SignUpPage() {
                                 <Link href="/legal/privacy" className="text-teal-600 dark:text-teal-400 hover:underline font-bold">Privacy Policy</Link>
                             </Label>
                         </div>
+                        <div className="flex items-center gap-2">
+                            <Checkbox id="remember" checked={rememberMe} onCheckedChange={v => setRememberMe(!!v)} />
+                            <Label htmlFor="remember" className="text-[11px] font-medium cursor-pointer">Remember me</Label>
+                        </div>
 
                         <Button type="submit" disabled={loading || !agreed}
                             className="w-full h-11 rounded-xl font-bold text-sm bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-500/20 transition-all hover:-translate-y-0.5 disabled:opacity-50">
@@ -205,7 +226,7 @@ export default function SignUpPage() {
                         <Link href="/auth/signin" className="font-bold text-teal-600 dark:text-teal-400 hover:underline">Sign in</Link>
                     </p>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }

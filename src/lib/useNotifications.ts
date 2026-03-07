@@ -1,25 +1,38 @@
 "use client"
 
 import { useEffect } from "react"
+import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 
+/**
+ * Real-time order notifications using Supabase Realtime.
+ * Listens for INSERT events on the orders table for the seller.
+ */
 export function useOrderNotifications(sellerId: string) {
     useEffect(() => {
-        // Scaffold WebSocket/SSE connection
-        // In production, this would connect to the real-time endpoint
-        const interval = setInterval(() => {
-            // Mock a random notification 5% of the time every 10 seconds
-            if (Math.random() < 0.05) {
-                toast("New Order Received!", {
-                    description: `Order #ORD-${Math.floor(Math.random() * 10000)} just came in.`,
-                    action: {
-                        label: "View",
-                        onClick: () => console.log("View order clicked"),
-                    }
-                })
-            }
-        }, 10000)
+        if (!sellerId) return
 
-        return () => clearInterval(interval)
+        const channel = supabase
+            .channel(`orders-${sellerId}`)
+            .on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "orders",
+                    filter: `seller_id=eq.${sellerId}`,
+                },
+                (payload) => {
+                    const order = payload.new as any
+                    toast.success("🛒 New Order Received!", {
+                        description: `Order ${order.order_number} — ৳${order.total?.toLocaleString() || "0"} from ${order.customer_name || "Customer"}`,
+                    })
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, [sellerId])
 }

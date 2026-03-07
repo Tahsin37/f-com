@@ -6,15 +6,18 @@ import { QueryProvider } from "@/components/query-provider";
 import { I18nProvider } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/CartContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
+  preload: false,
 });
 
 const notoSansBengali = Noto_Sans_Bengali({
   variable: "--font-noto-bengali",
   subsets: ["bengali"],
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -29,6 +32,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0d9488" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+      </head>
       <body
         className={`${spaceGrotesk.variable} ${notoSansBengali.variable} font-sans antialiased`}
       >
@@ -41,7 +51,9 @@ export default function RootLayout({
                 enableSystem
                 disableTransitionOnChange
               >
-                {children}
+                <ErrorBoundary>
+                  {children}
+                </ErrorBoundary>
                 <Toaster />
               </ThemeProvider>
             </CartProvider>

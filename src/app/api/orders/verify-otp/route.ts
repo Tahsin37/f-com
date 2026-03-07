@@ -36,6 +36,6 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, message: "OTP verified! Order confirmed." })
     } catch (error: any) {
-        return NextResponse.json({ error: error.message || "Verification failed" }, { status: 500 })
+        return NextResponse.json({ error: "Verification failed. Please try again." }, { status: 500 })
     }
 }

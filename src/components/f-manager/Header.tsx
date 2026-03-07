@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { ThemeToggle } from "./ThemeToggle"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { supabase } from "@/lib/supabase"
 import { Menu, X, BarChart3, CreditCard, Truck, Smartphone } from "lucide-react"
 
 const navLinks = [
@@ -14,6 +15,21 @@ const navLinks = [
 
 export function Header() {
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [hasSession, setHasSession] = useState(false)
+
+    useEffect(() => {
+        let mounted = true
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (mounted) setHasSession(!!session)
+        })
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (mounted) setHasSession(!!session)
+        })
+        return () => {
+            mounted = false
+            subscription.unsubscribe()
+        }
+    }, [])
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-neutral-200/50 dark:border-neutral-800/50 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
@@ -44,16 +60,26 @@ export function Header() {
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center gap-3">
                     <ThemeToggle />
-                    <Link href="/auth/signin">
-                        <Button variant="ghost" size="sm" className="font-semibold rounded-full px-5">
-                            Sign In
-                        </Button>
-                    </Link>
-                    <Link href="/auth/signup">
-                        <Button size="sm" className="font-bold rounded-full px-5 bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-500/20">
-                            Get Started Free
-                        </Button>
-                    </Link>
+                    {hasSession ? (
+                        <Link href="/dashboard">
+                            <Button size="sm" className="font-bold rounded-full px-5 bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-500/20">
+                                Go To Dashboard
+                            </Button>
+                        </Link>
+                    ) : (
+                        <>
+                            <Link href="/auth/signin">
+                                <Button variant="ghost" size="sm" className="font-semibold rounded-full px-5">
+                                    Sign In
+                                </Button>
+                            </Link>
+                            <Link href="/auth/signup">
+                                <Button size="sm" className="font-bold rounded-full px-5 bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-500/20">
+                                    Get Started Free
+                                </Button>
+                            </Link>
+                        </>
+                    )}
                 </div>
 
                 {/* Mobile */}
@@ -79,12 +105,20 @@ export function Header() {
                         </Link>
                     ))}
                     <div className="flex flex-col gap-3 pt-2">
-                        <Link href="/auth/signin" onClick={() => setMobileOpen(false)}>
-                            <Button variant="outline" className="w-full font-bold rounded-xl">Sign In</Button>
-                        </Link>
-                        <Link href="/auth/signup" onClick={() => setMobileOpen(false)}>
-                            <Button className="w-full font-bold rounded-xl bg-teal-600 hover:bg-teal-700 text-white">Get Started Free</Button>
-                        </Link>
+                        {hasSession ? (
+                            <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                                <Button className="w-full font-bold rounded-xl bg-teal-600 hover:bg-teal-700 text-white">Go To Dashboard</Button>
+                            </Link>
+                        ) : (
+                            <>
+                                <Link href="/auth/signin" onClick={() => setMobileOpen(false)}>
+                                    <Button variant="outline" className="w-full font-bold rounded-xl">Sign In</Button>
+                                </Link>
+                                <Link href="/auth/signup" onClick={() => setMobileOpen(false)}>
+                                    <Button className="w-full font-bold rounded-xl bg-teal-600 hover:bg-teal-700 text-white">Get Started Free</Button>
+                                </Link>
+                            </>
+                        )}
                     </div>
                     <div className="flex gap-3 pt-2 text-xs text-muted-foreground">
                         <Smartphone className="h-4 w-4" />

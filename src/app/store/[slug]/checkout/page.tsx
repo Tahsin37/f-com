@@ -34,7 +34,10 @@ function CheckoutInner({ slug }: { slug: string }) {
     const [phone, setPhone] = useState("")
     const [address, setAddress] = useState("")
     const [area, setArea] = useState<"dhaka" | "outside">("dhaka")
-    const [payMethod, setPayMethod] = useState<"cod" | "bkash" | "nagad">("cod")
+    const [payMethod, setPayMethod] = useState<"cod" | "partial_advance" | "full_paid">("cod")
+    const [payProvider, setPayProvider] = useState<"bkash" | "nagad">("bkash")
+    const [trxId, setTrxId] = useState("")
+    const [senderNumber, setSenderNumber] = useState("")
 
     // Coupon
     const [couponCode, setCouponCode] = useState("")
@@ -62,6 +65,8 @@ function CheckoutInner({ slug }: { slug: string }) {
     }, [subtotal, appliedCoupon])
 
     const total = subtotal - discountAmount + deliveryCharge
+    const advanceAmount = payMethod === "partial_advance" ? deliveryCharge : payMethod === "full_paid" ? total : 0
+    const dueAmount = total - advanceAmount
 
     const validatePhone = (p: string) => /^01[3-9]\d{8}$/.test(p)
 
@@ -131,9 +136,13 @@ function CheckoutInner({ slug }: { slug: string }) {
                 subtotal,
                 total,
                 payment_method: payMethod,
-                status: "pending",
+                status: payMethod === "cod" ? "pending" : "payment_pending",
                 otp_code: otpCode,
-                otp_verified: true, // Auto-verify for now since SMS isn't connected
+                otp_verified: true,
+                advance_paid: advanceAmount,
+                due_amount: dueAmount,
+                provided_trx_id: trxId.trim().toUpperCase() || null,
+                sender_number: senderNumber || null,
             }).select("id").single()
 
             if (orderErr) throw orderErr
@@ -376,9 +385,9 @@ function CheckoutInner({ slug }: { slug: string }) {
                             <h2 className="text-base font-bold flex items-center gap-2"><CreditCard className="h-5 w-5" style={{ color: themeColor }} /> Payment Method</h2>
                             <div className="space-y-3">
                                 {([
-                                    { value: "cod" as const, label: "Cash on Delivery", icon: "💵" },
-                                    { value: "bkash" as const, label: "bKash", icon: "📱" },
-                                    { value: "nagad" as const, label: "Nagad", icon: "📱" },
+                                    { value: "cod" as const, label: "Cash on Delivery", icon: "💵", desc: "Pay the full amount to delivery agent" },
+                                    { value: "partial_advance" as const, label: "Partial Advance (ডেলিভারি চার্জ)", icon: "📲", desc: `Pay only ৳${deliveryCharge} advance via bKash/Nagad` },
+                                    { value: "full_paid" as const, label: "Full Payment", icon: "✅", desc: "Pay full amount via bKash/Nagad" },
                                 ]).map(m => (
                                     <button key={m.value} onClick={() => setPayMethod(m.value)} type="button"
                                         className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${payMethod === m.value ? "bg-white dark:bg-neutral-800 shadow-sm" : "bg-neutral-50 dark:bg-neutral-900 border-transparent hover:border-neutral-200"}`}
@@ -387,10 +396,53 @@ function CheckoutInner({ slug }: { slug: string }) {
                                             {payMethod === m.value && <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: themeColor }} />}
                                         </div>
                                         <span className="text-2xl">{m.icon}</span>
-                                        <p className="text-base font-bold flex-1 text-left">{m.label}</p>
+                                        <div className="flex-1 text-left">
+                                            <p className="text-base font-bold">{m.label}</p>
+                                            <p className="text-xs text-muted-foreground">{m.desc}</p>
+                                        </div>
                                     </button>
                                 ))}
                             </div>
+
+                            {/* bKash/Nagad Payment Details */}
+                            {payMethod !== "cod" && (
+                                <div className="mt-4 space-y-4 p-4 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200/50 dark:border-amber-800/30">
+                                    <div className="flex gap-3">
+                                        {(["bkash", "nagad"] as const).map(p => (
+                                            <button key={p} type="button" onClick={() => setPayProvider(p)}
+                                                className={`flex-1 py-3 rounded-xl text-sm font-bold border-2 transition-all ${payProvider === p ? "text-white shadow-md" : "bg-white dark:bg-neutral-900 border-neutral-200"}`}
+                                                style={payProvider === p ? { backgroundColor: p === "bkash" ? "#E2136E" : "#F6921E", borderColor: p === "bkash" ? "#E2136E" : "#F6921E" } : {}}>
+                                                {p === "bkash" ? "bKash" : "Nagad"}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="bg-white dark:bg-neutral-900 rounded-xl p-4 border text-center space-y-2">
+                                        <p className="text-xs font-medium text-muted-foreground">Send <span className="font-extrabold text-foreground text-lg">৳{advanceAmount.toLocaleString()}</span> to</p>
+                                        <p className="text-2xl font-extrabold tracking-wide" style={{ color: payProvider === "bkash" ? "#E2136E" : "#F6921E" }}>
+                                            {payProvider === "bkash" ? (settings.bkash_number || seller?.bkash_number || "01XXXXXXXXX") : (settings.nagad_number || seller?.nagad_number || "01XXXXXXXXX")}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground">(Personal/{payProvider === "bkash" ? "bKash" : "Nagad"} Send Money)</p>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-sm font-bold">TrxID <span className="text-red-500">*</span></Label>
+                                            <Input value={trxId}
+                                                onChange={e => setTrxId(e.target.value.toUpperCase().replace(/\s/g, ""))}
+                                                placeholder="Enter TrxID (e.g. 8AB3X9Y)"
+                                                className="h-14 rounded-xl text-base bg-white dark:bg-neutral-900 border-neutral-200 font-mono tracking-widest text-center font-bold uppercase" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-sm font-bold">Sender Number</Label>
+                                            <Input value={senderNumber}
+                                                onChange={e => setSenderNumber(e.target.value)}
+                                                placeholder="01XXXXXXXXX"
+                                                className="h-14 rounded-xl text-base bg-white dark:bg-neutral-900 border-neutral-200 text-center" maxLength={11} />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Promo Code */}
@@ -434,9 +486,21 @@ function CheckoutInner({ slug }: { slug: string }) {
                                 </div>
                             )}
                             <div className="border-t border-neutral-200 dark:border-neutral-800 pt-4 mt-2 flex justify-between items-center">
-                                <span className="font-bold text-lg">Total Payment</span>
+                                <span className="font-bold text-lg">Total Bill</span>
                                 <span className="text-3xl font-extrabold" style={{ color: themeColor }}>৳{total.toLocaleString()}</span>
                             </div>
+                            {payMethod !== "cod" && (
+                                <>
+                                    <div className="flex justify-between text-base text-blue-600 dark:text-blue-400">
+                                        <span className="font-bold">Advance ({payMethod === "partial_advance" ? "Delivery Charge" : "Full"})</span>
+                                        <span className="font-bold">৳{advanceAmount.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-base bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl -mx-2">
+                                        <span className="font-extrabold text-amber-700 dark:text-amber-400">Due on Delivery</span>
+                                        <span className="font-extrabold text-xl text-amber-700 dark:text-amber-400">৳{dueAmount.toLocaleString()}</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         {/* Submit */}

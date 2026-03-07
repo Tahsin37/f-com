@@ -4,37 +4,37 @@ import { NextResponse } from "next/server"
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(req: Request) {
-    try {
-        const body = await req.json()
-        const { workerName, workerEmail, storeName, permissions, loginUrl } = body
+  try {
+    const body = await req.json()
+    const { workerName, workerEmail, storeName, permissions, loginUrl } = body
 
-        if (!workerEmail) {
-            return NextResponse.json({ error: "Worker email is required" }, { status: 400 })
-        }
+    if (!workerEmail) {
+      return NextResponse.json({ error: "Worker email is required" }, { status: 400 })
+    }
 
-        // Build permissions list for the email
-        const permLabels: Record<string, string> = {
-            can_add_product: "Add Products",
-            can_edit_product: "Edit Products",
-            can_delete_product: "Delete Products",
-            can_manage_orders: "Manage Orders",
-            can_view_analytics: "View Analytics",
-            can_manage_pos: "Use POS",
-        }
+    // Build permissions list for the email
+    const permLabels: Record<string, string> = {
+      can_add_product: "Add Products",
+      can_edit_product: "Edit Products",
+      can_delete_product: "Delete Products",
+      can_manage_orders: "Manage Orders",
+      can_view_analytics: "View Analytics",
+      can_manage_pos: "Use POS",
+    }
 
-        const grantedPerms = Object.entries(permissions || {})
-            .filter(([, v]) => v)
-            .map(([k]) => permLabels[k] || k)
+    const grantedPerms = Object.entries(permissions || {})
+      .filter(([, v]) => v)
+      .map(([k]) => permLabels[k] || k)
 
-        const permissionsHtml = grantedPerms.length > 0
-            ? grantedPerms.map(p => `<li style="padding:4px 0;color:#333">✅ ${p}</li>`).join("")
-            : `<li style="padding:4px 0;color:#888">No specific permissions assigned yet</li>`
+    const permissionsHtml = grantedPerms.length > 0
+      ? grantedPerms.map(p => `<li style="padding:4px 0;color:#333">✅ ${p}</li>`).join("")
+      : `<li style="padding:4px 0;color:#888">No specific permissions assigned yet</li>`
 
-        const { data, error } = await resend.emails.send({
-            from: "F-Manager <onboarding@resend.dev>",
-            to: [workerEmail],
-            subject: `🎉 You've been added as a worker at ${storeName}`,
-            html: `
+    const { data, error } = await resend.emails.send({
+      from: "F-Manager <onboarding@resend.dev>",
+      to: [workerEmail],
+      subject: `🎉 You've been added as a worker at ${storeName}`,
+      html: `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
@@ -81,16 +81,16 @@ export async function POST(req: Request) {
 </body>
 </html>
             `.trim(),
-        })
+    })
 
-        if (error) {
-            console.error("Resend error:", error)
-            return NextResponse.json({ error: error.message }, { status: 500 })
-        }
-
-        return NextResponse.json({ success: true, id: data?.id })
-    } catch (err: any) {
-        console.error("Invite API error:", err)
-        return NextResponse.json({ error: err.message || "Failed to send email" }, { status: 500 })
+    if (error) {
+      console.error("Resend error:", error)
+      return NextResponse.json({ error: "Failed to send invitation email. Please try again." }, { status: 500 })
     }
+
+    return NextResponse.json({ success: true, id: data?.id })
+  } catch (err: any) {
+    console.error("Invite API error:", err)
+    return NextResponse.json({ error: "Failed to send invitation. Please try again." }, { status: 500 })
+  }
 }

@@ -53,6 +53,6 @@ export async function POST(request: Request) {
 
     } catch (error: any) {
         console.error("Domain Add Error:", error)
-        return NextResponse.json({ error: error.message || "Failed to add domain" }, { status: 500 })
+        return NextResponse.json({ error: "Failed to add domain. Please try again." }, { status: 500 })
     }
 }

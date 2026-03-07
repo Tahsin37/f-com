@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 
         if (error) {
             console.error("Storage upload error:", error)
-            return NextResponse.json({ error: error.message }, { status: 500 })
+            return NextResponse.json({ error: "Failed to upload file. Please try again." }, { status: 500 })
         }
 
         // Get public URL
@@ -51,6 +51,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ url: urlData.publicUrl })
     } catch (err: any) {
         console.error("Upload API error:", err)
-        return NextResponse.json({ error: err.message || "Upload failed" }, { status: 500 })
+        return NextResponse.json({ error: "Upload failed. Please try again." }, { status: 500 })
     }
 }

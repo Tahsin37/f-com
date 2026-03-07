@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#0D9488</color>
+    <string name="app_name">RuxSpeed</string>
+    <style name="Theme.RuxSpeed" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#0D9488</item>
+        <item name="colorPrimaryDark">#065F46</item>
+        <item name="colorAccent">#0D9488</item>
+        <item name="android:statusBarColor">#065F46</item>
+    </style>
+</resources>

@@ -1,0 +1,16 @@
+<resources>
+    <!-- Main app theme -->
+    <style name="Theme.RuxSpeed" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#0D9488</item>
+        <item name="colorPrimaryDark">#065F46</item>
+        <item name="colorAccent">#0D9488</item>
+        <item name="android:statusBarColor">#065F46</item>
+        <item name="android:navigationBarColor">#0a0a0a</item>
+        <item name="android:windowBackground">#0a0a0a</item>
+    </style>
+
+    <!-- Splash theme for instant launch feel -->
+    <style name="Theme.RuxSpeed.Splash" parent="Theme.RuxSpeed">
+        <item name="android:windowBackground">#0a0a0a</item>
+    </style>
+</resources>

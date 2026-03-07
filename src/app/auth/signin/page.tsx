@@ -8,15 +8,37 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
-import { BarChart3, Eye, EyeOff, ArrowRight, Smartphone, ShieldCheck, Truck, Loader2 } from "lucide-react"
+import { BarChart3, Eye, EyeOff, ArrowRight, Smartphone, ShieldCheck, Truck, Loader2, Mail } from "lucide-react"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 import { supabase } from "@/lib/supabase"
 
 export default function SignInPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
+    const [rememberMe, setRememberMe] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [resetEmail, setResetEmail] = useState("")
+    const [resetLoading, setResetLoading] = useState(false)
+    const [resetSent, setResetSent] = useState(false)
+    const [resetDialogOpen, setResetDialogOpen] = useState(false)
     const router = useRouter()
+
+    // Hydrate from localStorage on mount
+    React.useEffect(() => {
+        const saved = localStorage.getItem("fmanager_saved_email")
+        if (saved) {
+            setEmail(saved)
+            setRememberMe(true)
+        }
+    }, [])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -26,11 +48,19 @@ export default function SignInPage() {
         }
         setLoading(true)
         try {
+            // Save email for convenience if remember me is checked
+            if (rememberMe) {
+                localStorage.setItem("fmanager_saved_email", email)
+            } else {
+                localStorage.removeItem("fmanager_saved_email")
+            }
+
             const { error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             })
             if (error) throw error
+
             toast.success("Welcome back to F-Manager!")
             router.push("/dashboard")
             router.refresh()
@@ -38,6 +68,29 @@ export default function SignInPage() {
             toast.error(err.message || "Invalid email or password")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!resetEmail) {
+            toast.error("Please enter your email address")
+            return
+        }
+        setResetLoading(true)
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+                // If they are on a custom domain, redirect back to their signin. For now, default base URL.
+                redirectTo: `${window.location.origin}/auth/reset-password`,
+            })
+            if (error) throw error
+            setResetSent(true)
+            toast.success("Password reset link sent to your email")
+        } catch (err: any) {
+            // For security, we don't leak "user not found" versus "real error" usually, but Supabase handles this cleanly.
+            toast.error(err.message || "Failed to send reset email. Please try again.")
+        } finally {
+            setResetLoading(false)
         }
     }
 
@@ -112,9 +165,58 @@ export default function SignInPage() {
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="password" className="font-semibold">Password</Label>
-                                <Link href="#" className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline">
-                                    Forgot password?
-                                </Link>
+                                <Dialog open={resetDialogOpen} onOpenChange={(open) => {
+                                    setResetDialogOpen(open)
+                                    if (!open) {
+                                        setResetSent(false)
+                                        setResetEmail("")
+                                    }
+                                }}>
+                                    <DialogTrigger asChild>
+                                        <button type="button" className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline">
+                                            Forgot password?
+                                        </button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Reset Password</DialogTitle>
+                                            <DialogDescription>
+                                                Enter your email address and we will send you a link to reset your password.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        {!resetSent ? (
+                                            <form onSubmit={handleResetPassword} className="space-y-4 py-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="reset-email">Email Address</Label>
+                                                    <Input
+                                                        id="reset-email"
+                                                        type="email"
+                                                        placeholder="you@example.com"
+                                                        value={resetEmail}
+                                                        onChange={(e) => setResetEmail(e.target.value)}
+                                                        required
+                                                    />
+                                                </div>
+                                                <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 text-white" disabled={resetLoading}>
+                                                    {resetLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
+                                                    Send Reset Link
+                                                </Button>
+                                            </form>
+                                        ) : (
+                                            <div className="py-6 text-center space-y-4">
+                                                <div className="mx-auto w-12 h-12 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                                                    <Mail className="h-6 w-6 text-teal-600 dark:text-teal-400" />
+                                                </div>
+                                                <p className="text-sm text-muted-foreground">
+                                                    We sent a password reset link to <strong>{resetEmail}</strong>. Please check your inbox and spam folder.
+                                                </p>
+                                                <Button variant="outline" className="w-full mt-2" onClick={() => setResetDialogOpen(false)}>
+                                                    Close
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </DialogContent>
+                                </Dialog>
                             </div>
                             <div className="relative">
                                 <Input
@@ -133,6 +235,18 @@ export default function SignInPage() {
                                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                 </button>
                             </div>
+                        </div>
+
+                        {/* Remember Me */}
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                id="remember"
+                                checked={rememberMe}
+                                onCheckedChange={(checked) => setRememberMe(checked === true)}
+                            />
+                            <label htmlFor="remember" className="text-sm text-muted-foreground font-medium cursor-pointer select-none">
+                                Remember me
+                            </label>
                         </div>
 
                         <Button
