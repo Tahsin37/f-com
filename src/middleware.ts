@@ -61,8 +61,8 @@ export default async function proxy(req: NextRequest) {
     const currentHost = hostname.replace(/:\d+$/, "") // Strip port if present
 
     // Define root domains that host the SAAS
-    const rootDomains = ["localhost", "127.0.0.1", "f-manager.com", "fmanager.app", "vercel.app"]
-    const isRootRequest = rootDomains.includes(currentHost)
+    const rootDomains = ["localhost", "127.0.0.1", "f-manager.com", "fmanager.app"]
+    const isRootRequest = rootDomains.includes(currentHost) || currentHost.endsWith(".vercel.app")
 
     // Bypass middleware for Next.js internals, APIs
     if (pathname.startsWith("/api/") || pathname.startsWith("/_next/")) {
