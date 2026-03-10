@@ -59,6 +59,8 @@ export default function ProductsPage() {
 
     const deleteProduct = async (id: string) => {
         if (!confirm("Delete this product? This cannot be undone.")) return
+        await supabase.from("variants").delete().eq("product_id", id)
+        await supabase.from("reviews").delete().eq("product_id", id)
         const { error } = await supabase.from("products").delete().eq("id", id)
         if (error) {
             toast.error("Failed to delete product")

@@ -11,6 +11,7 @@ import {
     Globe, Plus, Loader2, Trash2, CheckCircle2, Clock, AlertCircle,
     Copy, ExternalLink, RefreshCw, Shield
 } from "lucide-react"
+import { getStoreUrl } from "@/lib/utils"
 
 interface DomainRecord {
     domain: string
@@ -171,10 +172,10 @@ export default function DomainManagerPage() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-xs font-bold text-muted-foreground mb-1">Default Store URL</p>
-                            <p className="text-sm font-mono font-semibold text-teal-600">{typeof window !== "undefined" ? window.location.origin : ""}/store/{sellerSlug}</p>
+                            <p className="text-sm font-mono font-semibold text-teal-600">{getStoreUrl(sellerSlug)}</p>
                         </div>
                         <Button variant="outline" size="sm" className="rounded-lg gap-1"
-                            onClick={() => copyToClipboard(`${typeof window !== "undefined" ? window.location.origin : ""}/store/${sellerSlug}`)}>
+                            onClick={() => copyToClipboard(getStoreUrl(sellerSlug))}>
                             <Copy className="h-3 w-3" /> Copy
                         </Button>
                     </div>

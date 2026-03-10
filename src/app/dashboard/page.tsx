@@ -224,10 +224,10 @@ export default function DashboardPage() {
             {/* Stat Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((s) => (
-                    <Card key={s.label} className="border-transparent hover:shadow-lg transition-shadow">
+                    <Card key={s.label} className="border-transparent rounded-[24px] bg-white dark:bg-neutral-900 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgb(255,255,255,0.02)] transition-all duration-300">
                         <CardContent className="p-5">
                             <div className="flex items-start justify-between mb-3">
-                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-neutral-800`}>
+                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center bg-slate-50 dark:bg-neutral-800`}>
                                     <s.icon className={`h-5 w-5 ${s.color}`} />
                                 </div>
                             </div>
@@ -241,7 +241,7 @@ export default function DashboardPage() {
             {/* Charts Row */}
             <div className="grid lg:grid-cols-5 gap-6">
                 {/* Revenue Chart */}
-                <Card className="lg:col-span-3 border-transparent shadow-sm hover:shadow-md transition-shadow">
+                <Card className="lg:col-span-3 rounded-[24px] border-neutral-100 dark:border-neutral-800/50 shadow-sm hover:shadow-md transition-all duration-300">
                     <CardHeader>
                         <CardTitle className="text-base font-bold flex items-center gap-2">
                             <TrendingUp className="h-4 w-4 text-teal-600" /> Revenue (Last 30 Days)
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                 </Card>
 
                 {/* Category Pie */}
-                <Card className="lg:col-span-2 border-transparent">
+                <Card className="lg:col-span-2 rounded-[24px] border-neutral-100 dark:border-neutral-800/50 shadow-sm hover:shadow-md transition-all duration-300 bg-gradient-to-br from-white to-slate-50 dark:from-neutral-900 dark:to-neutral-950">
                     <CardHeader>
                         <CardTitle className="text-base font-bold">Products by Category</CardTitle>
                     </CardHeader>
@@ -299,7 +299,7 @@ export default function DashboardPage() {
 
             {/* Low Stock Alerts */}
             {lowStockProducts.length > 0 && (
-                <Card className="border-transparent border-l-4 border-l-amber-500" id="products">
+                <Card className="rounded-[24px] border-l-4 border-l-amber-500 shadow-sm" id="products">
                     <CardHeader>
                         <CardTitle className="text-base font-bold flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4 text-amber-500" /> Inventory Alerts
@@ -323,8 +323,8 @@ export default function DashboardPage() {
             )}
 
             {/* Recent Orders */}
-            <Card className="border-transparent" id="orders">
-                <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <Card className="rounded-[24px] border-neutral-100 dark:border-neutral-800/50 shadow-sm overflow-hidden" id="orders">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50 dark:bg-neutral-900/50 border-b border-neutral-100 dark:border-neutral-800/50">
                     <CardTitle className="text-base font-bold flex items-center gap-2">
                         <ShoppingCart className="h-4 w-4 text-indigo-600" /> Recent Orders
                     </CardTitle>
@@ -332,7 +332,7 @@ export default function DashboardPage() {
                         <div className="relative flex-1 sm:w-64">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                             <Input placeholder="Search orders..." value={search} onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9 h-9 text-sm rounded-lg" />
+                                className="pl-9 h-9 text-sm rounded-xl border-neutral-200 dark:border-neutral-800 focus-visible:ring-teal-500" />
                         </div>
                     </div>
                 </CardHeader>
@@ -345,49 +345,49 @@ export default function DashboardPage() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="border-b border-neutral-200 dark:border-neutral-800">
-                                        <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground text-xs">ORDER</th>
-                                        <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground text-xs">CUSTOMER</th>
-                                        <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground text-xs">AMOUNT</th>
-                                        <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground text-xs">STATUS</th>
-                                        <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground text-xs">ACTION</th>
+                                    <tr className="border-b border-neutral-100 dark:border-neutral-800/50 bg-slate-50/50 dark:bg-neutral-900/20">
+                                        <th className="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">ORDER</th>
+                                        <th className="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">CUSTOMER</th>
+                                        <th className="text-right px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">AMOUNT</th>
+                                        <th className="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">STATUS</th>
+                                        <th className="text-right px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">ACTION</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredOrders.slice(0, 20).map((o) => (
-                                        <tr key={o.id} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-slate-50 dark:hover:bg-neutral-900/30">
-                                            <td className="px-4 py-3">
-                                                <p className="font-bold text-teal-600 text-xs">{o.order_number}</p>
-                                                <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleDateString()}</p>
+                                        <tr key={o.id} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-slate-50/80 dark:hover:bg-neutral-900/40 transition-colors">
+                                            <td className="px-5 py-4">
+                                                <p className="font-bold text-teal-600 text-[13px]">{o.order_number}</p>
+                                                <p className="text-[11px] text-muted-foreground mt-0.5">{new Date(o.created_at).toLocaleDateString()}</p>
                                             </td>
-                                            <td className="px-4 py-3">
-                                                <p className="font-medium">{o.customer_name}</p>
-                                                <p className="text-xs text-muted-foreground">{o.customer_phone}</p>
+                                            <td className="px-5 py-4">
+                                                <p className="font-semibold text-[13px]">{o.customer_name}</p>
+                                                <p className="text-[11px] text-muted-foreground mt-0.5">{o.customer_phone}</p>
                                             </td>
-                                            <td className="px-4 py-3 text-right font-bold">৳{Number(o.total).toLocaleString()}</td>
-                                            <td className="px-4 py-3">
-                                                <Badge className={`text-[10px] font-semibold capitalize ${STATUS_COLORS[o.status] || ""}`}>
+                                            <td className="px-5 py-4 text-right font-bold text-[13px]">৳{Number(o.total).toLocaleString()}</td>
+                                            <td className="px-5 py-4">
+                                                <Badge className={`text-[10px] font-bold capitalize px-2 py-0.5 rounded-md ${STATUS_COLORS[o.status] || ""}`}>
                                                     {o.status}
                                                 </Badge>
                                                 {!o.otp_verified && o.status === "pending" && (
-                                                    <span className="text-[9px] text-amber-500 ml-1">⚠ OTP pending</span>
+                                                    <span className="text-[9px] text-amber-500 ml-1 font-medium">⚠ OTP</span>
                                                 )}
                                             </td>
-                                            <td className="px-4 py-3 text-right">
-                                                <div className="flex items-center justify-end gap-1.5">
+                                            <td className="px-5 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2">
                                                     <Link href={`/invoice/${o.id}`} target="_blank">
-                                                        <Button size="sm" variant="outline" className="h-7 text-xs rounded-lg gap-1">
+                                                        <Button size="sm" variant="outline" className="h-8 text-[11px] font-semibold rounded-lg gap-1.5 shadow-sm border-neutral-200 hover:bg-neutral-100 dark:border-neutral-800 dark:hover:bg-neutral-800 transition-colors">
                                                             📄 Invoice
                                                         </Button>
                                                     </Link>
                                                     {(o.status === "pending" || o.status === "processing") && (
-                                                        <Button size="sm" className="h-7 text-xs rounded-lg gap-1 bg-teal-600 hover:bg-teal-700 text-white"
+                                                        <Button size="sm" className="h-8 text-[11px] font-semibold rounded-lg gap-1.5 bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-500/20 transition-all hover:-translate-y-0.5"
                                                             onClick={() => setCourierOrder(o)}>
                                                             <Truck className="h-3 w-3" /> Ship
                                                         </Button>
                                                     )}
                                                     {o.courier_awb && (
-                                                        <span className="text-xs text-muted-foreground">{o.courier_awb}</span>
+                                                        <span className="text-[11px] font-medium text-muted-foreground bg-neutral-100 dark:bg-neutral-800 px-2 py-1 rounded-md">{o.courier_awb}</span>
                                                     )}
                                                 </div>
                                             </td>
@@ -402,8 +402,8 @@ export default function DashboardPage() {
 
             {/* Top Customers */}
             {topCustomers.length > 0 && (
-                <Card className="border-transparent" id="customers">
-                    <CardHeader>
+                <Card className="rounded-[24px] border-neutral-100 dark:border-neutral-800/50 shadow-sm overflow-hidden" id="customers">
+                    <CardHeader className="bg-slate-50/50 dark:bg-neutral-900/50 border-b border-neutral-100 dark:border-neutral-800/50">
                         <CardTitle className="text-base font-bold flex items-center gap-2">
                             <Users className="h-4 w-4 text-violet-600" /> Top Customers
                         </CardTitle>
@@ -412,26 +412,26 @@ export default function DashboardPage() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="border-b border-neutral-200 dark:border-neutral-800">
-                                        <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground text-xs">Customer</th>
-                                        <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground text-xs">Orders</th>
-                                        <th className="text-right px-4 py-2.5 font-semibold text-muted-foreground text-xs">Spent</th>
+                                    <tr className="border-b border-neutral-100 dark:border-neutral-800/50 bg-slate-50/50 dark:bg-neutral-900/20">
+                                        <th className="text-left px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Customer</th>
+                                        <th className="text-right px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Orders</th>
+                                        <th className="text-right px-5 py-3.5 font-semibold text-muted-foreground text-xs uppercase tracking-wider">Spent</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {topCustomers.map((c, idx) => (
-                                        <tr key={c.phone} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-slate-50 dark:hover:bg-neutral-900/30">
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="h-8 w-8 rounded-full bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-xs font-bold text-teal-700 dark:text-teal-300">{c.name[0]}</div>
+                                        <tr key={c.phone} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-slate-50/80 dark:hover:bg-neutral-900/40 transition-colors">
+                                            <td className="px-5 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-teal-100 to-emerald-100 dark:from-teal-900/50 dark:to-emerald-900/50 flex items-center justify-center text-sm font-bold text-teal-700 dark:text-teal-300 ring-4 ring-white dark:ring-neutral-950 shadow-sm">{c.name[0]}</div>
                                                     <div>
-                                                        <p className="font-medium text-sm">{c.name}</p>
-                                                        <p className="text-xs text-muted-foreground">{c.phone}</p>
+                                                        <p className="font-bold text-[13px]">{c.name}</p>
+                                                        <p className="text-[11px] text-muted-foreground mt-0.5">{c.phone}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3 text-right font-semibold">{c.orders}</td>
-                                            <td className="px-4 py-3 text-right font-bold text-teal-600">৳{c.spent.toLocaleString()}</td>
+                                            <td className="px-5 py-4 text-right font-bold text-[13px]">{c.orders}</td>
+                                            <td className="px-5 py-4 text-right font-black text-teal-600 text-[13px]">৳{c.spent.toLocaleString()}</td>
                                         </tr>
                                     ))}
                                 </tbody>

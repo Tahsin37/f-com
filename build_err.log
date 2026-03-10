@@ -1,0 +1,72 @@
+
+> fmanager@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 7.3s
+  Running TypeScript ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/39) ...
+  Generating static pages using 5 workers (9/39) 
+  Generating static pages using 5 workers (19/39) 
+  Generating static pages using 5 workers (29/39) 
+✓ Generating static pages using 5 workers (39/39) in 835.5ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/courier/book
+├ ƒ /api/domains/add
+├ ƒ /api/domains/verify
+├ ƒ /api/orders
+├ ƒ /api/orders/verify-otp
+├ ƒ /api/reviews
+├ ƒ /api/sellers/[id]/apply-theme
+├ ƒ /api/sellers/[id]/rollback-theme
+├ ƒ /api/themes
+├ ƒ /api/themes/generate
+├ ƒ /api/themes/import-html
+├ ƒ /api/upload
+├ ƒ /api/webhooks/ruxspeed-sms
+├ ƒ /api/workers/invite
+├ ○ /app
+├ ○ /auth/signin
+├ ○ /auth/signup
+├ ○ /auth/worker
+├ ○ /checkout
+├ ○ /components
+├ ○ /dashboard
+├ ○ /dashboard/campaigns
+├ ○ /dashboard/coupons
+├ ○ /dashboard/domains
+├ ○ /dashboard/orders
+├ ○ /dashboard/products
+├ ○ /dashboard/products/add
+├ ○ /dashboard/quick-sell
+├ ○ /dashboard/settings
+├ ○ /dashboard/store
+├ ○ /dashboard/theme
+├ ○ /dashboard/theme-manager
+├ ○ /dashboard/workers
+├ ○ /demo
+├ ƒ /demo/[seller]
+├ ƒ /invoice/[orderId]
+├ ○ /legal/privacy
+├ ○ /legal/terms
+├ ○ /settings
+├ ƒ /store/[slug]
+├ ƒ /store/[slug]/checkout
+├ ƒ /store/[slug]/product/[productId]
+├ ƒ /store/[slug]/search
+└ ƒ /store/[slug]/track
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

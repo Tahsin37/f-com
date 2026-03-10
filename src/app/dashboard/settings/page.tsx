@@ -11,6 +11,7 @@ import { Save, Loader2, Store, Key, MapPin, Truck, Megaphone, Globe, Facebook, I
 import { Switch } from "@/components/ui/switch"
 import { supabase } from "@/lib/supabase"
 import type { Seller } from "@/lib/types"
+import { getStoreUrl } from "@/lib/utils"
 
 export default function SettingsPage() {
     const [seller, setSeller] = useState<Seller | null>(null)
@@ -189,7 +190,7 @@ export default function SettingsPage() {
                     {seller?.slug && (
                         <div className="p-3 rounded-xl bg-slate-50 dark:bg-neutral-800/50 text-sm">
                             <p className="text-muted-foreground mb-1">Your storefront URL:</p>
-                            <code className="text-teal-600 font-mono font-bold">/store/{seller.slug}</code>
+                            <code className="text-teal-600 font-mono font-bold"><a href={getStoreUrl(seller.slug)} target="_blank" rel="noreferrer" className="hover:underline">{getStoreUrl(seller.slug).replace(/^https?:\/\//, '')}</a></code>
                         </div>
                     )}
                 </CardContent>

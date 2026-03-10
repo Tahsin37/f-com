@@ -10,6 +10,8 @@ import { sanitizeImageUrls } from "@/lib/imageUtils"
 import { StoreTemplate } from "@/components/store/StoreTemplate"
 import { StoreCartProvider, useStoreCart } from "@/lib/StoreCartContext"
 import { ProductDrawer } from "@/components/f-manager/ProductDrawer"
+import { ThemeProvider } from "@/components/store/ThemeProvider"
+import type { ThemeJSON } from "@/lib/theme/types"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
@@ -49,16 +51,39 @@ function StoreInner({ slug }: { slug: string }) {
     const [search, setSearch] = useState("")
     const [drawerProduct, setDrawerProduct] = useState<ReturnType<typeof mapProduct> | null>(null)
     const [drawerOpen, setDrawerOpen] = useState(false)
+    const [activeTheme, setActiveTheme] = useState<ThemeJSON | null>(null)
 
     useEffect(() => {
         async function load() {
             const { data: sd } = await supabase
                 .from("sellers")
-                .select("id, name, slug, settings")
+                .select("id, name, slug, settings, active_theme_id")
                 .eq("slug", slug)
                 .single()
             if (!sd) { setLoading(false); return }
             setSellerData(sd)
+
+            // Fetch active theme if set
+            if (sd.active_theme_id) {
+                const { data: themeRow } = await supabase
+                    .from("themes")
+                    .select("*")
+                    .eq("id", sd.active_theme_id)
+                    .single()
+                if (themeRow) {
+                    setActiveTheme({
+                        id: themeRow.slug,
+                        name: themeRow.name,
+                        author: themeRow.author,
+                        version: themeRow.version,
+                        previewImage: themeRow.preview_image,
+                        tokens: themeRow.tokens,
+                        components: themeRow.components,
+                        assets: themeRow.assets,
+                        safeCSS: themeRow.safe_css,
+                    })
+                }
+            }
 
             const { data: pd } = await supabase
                 .from("products")
@@ -133,6 +158,7 @@ function StoreInner({ slug }: { slug: string }) {
         tagline: settings.store_tagline || "Quality products with fast delivery! 🇧🇩",
         themeColor: settings.theme_color || "#0d9488",
         bannerImage: settings.banner_image || "",
+        bannerImages: settings.banner_images || [],
         bannerTitle: settings.banner_title || `${sellerData.name} — New Arrivals`,
         bannerSubtitle: settings.banner_subtitle || "Free delivery on orders above ৳999",
         bannerCta: settings.banner_cta || "Shop Now",
@@ -150,7 +176,7 @@ function StoreInner({ slug }: { slug: string }) {
     }
 
     return (
-        <>
+        <ThemeProvider theme={activeTheme}>
             <StoreTemplate {...templateProps} />
 
             <ProductDrawer
@@ -158,7 +184,7 @@ function StoreInner({ slug }: { slug: string }) {
                 open={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
             />
-        </>
+        </ThemeProvider>
     )
 }
 

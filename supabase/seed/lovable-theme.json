@@ -1,0 +1,43 @@
+{
+    "id": "lovable-v1",
+    "name": "Lovable",
+    "author": "Team Sifr",
+    "previewImage": "https://placehold.co/600x300/0ea5a4/ffffff?text=Lovable+Theme",
+    "version": "1.0.0",
+    "tokens": {
+        "colors": {
+            "primary": "#0EA5A4",
+            "accent": "#FFD166",
+            "bg": "#FFFFFF",
+            "text": "#0F172A",
+            "muted": "#94A3B8"
+        },
+        "fonts": {
+            "heading": "'Space Grotesk', system-ui, sans-serif",
+            "body": "'Noto Sans Bengali', system-ui, sans-serif"
+        },
+        "radii": {
+            "card": "1rem",
+            "button": "9999px"
+        },
+        "spacings": {
+            "container": "1200px",
+            "gap": "1.25rem"
+        }
+    },
+    "components": {
+        "hero": {
+            "layout": "centered-image-right",
+            "buttonStyle": "primary-filled"
+        },
+        "productGrid": {
+            "columns": 2,
+            "cardStyle": "rounded-shadow"
+        }
+    },
+    "assets": {
+        "logo": "https://placehold.co/200x60/0ea5a4/ffffff?text=FManager",
+        "heroImage": "https://placehold.co/800x600/ffd166/ffffff?text=Hero"
+    },
+    "safeCSS": ".btn-primary{box-shadow:0 8px 24px rgba(14,165,164,0.12)}"
+}

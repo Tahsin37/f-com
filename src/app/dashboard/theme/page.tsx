@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
+import { getStoreUrl } from "@/lib/utils"
 import { THEME_PRESETS, type ThemePreset, type ThemeConfig, DEFAULT_STORE_SECTIONS, type StoreSection } from "@/lib/types"
 import {
     Loader2, Save, Palette, Type, Layout, Eye, GripVertical,
-    ChevronUp, ChevronDown, ToggleLeft, ToggleRight, Sparkles, Plus, Settings
+    ChevronUp, ChevronDown, ToggleLeft, ToggleRight, Sparkles, Plus, Settings, Heart, ChevronRight
 } from "lucide-react"
+import Link from "next/link"
 
 export default function ThemeEditorPage() {
     const [loading, setLoading] = useState(true)
@@ -44,6 +46,7 @@ export default function ThemeEditorPage() {
     const [hideOutOfStock, setHideOutOfStock] = useState(false)
     const [whatsappNumber, setWhatsappNumber] = useState("")
     const [storeTagline, setStoreTagline] = useState("")
+    const [storeText, setStoreText] = useState<Record<string, string>>({})
 
     useEffect(() => {
         async function load() {
@@ -85,6 +88,7 @@ export default function ThemeEditorPage() {
             setHideOutOfStock(s.hide_out_of_stock || false)
             setWhatsappNumber(s.whatsapp_number || "")
             setStoreTagline(s.store_tagline || "")
+            setStoreText(s.store_text || {})
 
             setLoading(false)
         }
@@ -144,6 +148,7 @@ export default function ThemeEditorPage() {
                 hide_out_of_stock: hideOutOfStock,
                 whatsapp_number: whatsappNumber,
                 store_tagline: storeTagline,
+                store_text: storeText,
             }
 
             const { error } = await supabase.from("sellers").update({ settings: updatedSettings }).eq("id", sellerId)
@@ -168,7 +173,7 @@ export default function ThemeEditorPage() {
                 <div className="flex gap-2">
                     {sellerSlug && (
                         <Button variant="outline" className="rounded-xl gap-1 text-xs" asChild>
-                            <a href={`/store/${sellerSlug}`} target="_blank"><Eye className="h-3.5 w-3.5" /> Preview</a>
+                            <a href={getStoreUrl(sellerSlug)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> Preview</a>
                         </Button>
                     )}
                     <Button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl gap-2 font-bold">
@@ -176,6 +181,24 @@ export default function ThemeEditorPage() {
                         {saving ? "Saving..." : "Save Theme"}
                     </Button>
                 </div>
+            </div>
+
+            {/* Theme Studio Link */}
+            <div className="rounded-2xl bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 p-4 flex items-center justify-between gap-4 shadow-lg shadow-teal-500/10">
+                <div className="flex items-center gap-3 text-white">
+                    <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
+                        <Heart className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-extrabold">Theme Studio</p>
+                        <p className="text-[10px] text-white/80">Get your store code, customize with AI, add custom HTML/CSS</p>
+                    </div>
+                </div>
+                <Link href="/dashboard/theme-manager">
+                    <Button className="rounded-xl bg-white text-teal-700 hover:bg-white/90 font-bold text-xs h-9 gap-1.5 active:scale-95 transition-transform">
+                        Open Studio <ChevronRight className="h-3 w-3" />
+                    </Button>
+                </Link>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-6">
@@ -327,6 +350,42 @@ export default function ThemeEditorPage() {
                         <button onClick={() => setHideOutOfStock(!hideOutOfStock)}>
                             {hideOutOfStock ? <ToggleRight className="h-5 w-5 text-teal-600" /> : <ToggleLeft className="h-5 w-5 text-neutral-400" />}
                         </button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Storefront Text Customizer */}
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2"><Type className="h-4 w-4 text-emerald-500" /> Storefront Text Customizer</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[
+                            { key: "nav_track_order", label: "Track Order Nav Link", default: "Track Order" },
+                            { key: "nav_cart", label: "Cart Nav Link", default: "Cart" },
+                            { key: "search_placeholder", label: "Search Placeholder", default: "Search products..." },
+                            { key: "flash_deals_title", label: "Flash Deals Header", default: "Flash Deals" },
+                            { key: "all_products_title", label: "All Products Header", default: "All Products" },
+                            { key: "btn_add_to_cart", label: "Add to Cart Button", default: "Add to Cart" },
+                            { key: "btn_quick_add", label: "Quick Add Button", default: "Quick Add" },
+                            { key: "badge_sold_out", label: "Sold Out Badge", default: "Sold Out" },
+                            { key: "badge_hot", label: "Hot Badge", default: "HOT" },
+                            { key: "filter_btn", label: "Filter Button", default: "Filter" },
+                            { key: "footer_quick_links", label: "Footer 'Quick Links'", default: "Quick Links" },
+                            { key: "footer_categories", label: "Footer 'Categories'", default: "Categories" },
+                            { key: "footer_contact", label: "Footer 'Contact'", default: "Contact" },
+                        ].map(t => (
+                            <div key={t.key} className="space-y-1">
+                                <Label className="text-xs font-bold">{t.label}</Label>
+                                <Input
+                                    value={storeText[t.key] !== undefined ? storeText[t.key] : t.default}
+                                    onChange={e => setStoreText({ ...storeText, [t.key]: e.target.value })}
+                                    placeholder={t.default}
+                                    className="h-10 rounded-xl"
+                                />
+                            </div>
+                        ))}
                     </div>
                 </CardContent>
             </Card>

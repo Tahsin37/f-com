@@ -57,6 +57,7 @@ function AddProductForm() {
     const [loadingEdit, setLoadingEdit] = useState(false)
     const [sellerId, setSellerId] = useState("")
     const [uploading, setUploading] = useState(false)
+    const [isActive, setIsActive] = useState(true)
 
     // Get seller_id from session
     useEffect(() => {
@@ -90,6 +91,7 @@ function AddProductForm() {
                     setMetadata(data.metadata || {})
                     setHasVariants(data.has_variants)
                     setStock(String(data.stock))
+                    setIsActive(data.is_active ?? true)
                     if (data.variants?.length) {
                         setVariants(data.variants.map((v: any) => ({
                             id: v.id,
@@ -137,6 +139,7 @@ function AddProductForm() {
             metadata,
             has_variants: hasVariants,
             stock: hasVariants ? 0 : (Number(stock) || 0),
+            is_active: isActive,
             updated_at: new Date().toISOString(),
         }
 

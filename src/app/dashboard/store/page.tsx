@@ -10,9 +10,12 @@ import { toast } from "sonner"
 import { supabase } from "@/lib/supabase"
 import {
     Save, Store, Image as ImageIcon, Palette, Eye, ExternalLink,
-    Loader2, Paintbrush, AlignLeft, Type, Tag, Upload
+    Loader2, Paintbrush, AlignLeft, Type, Tag, Upload, X,
+    Smartphone, Tablet, Monitor, GripVertical
 } from "lucide-react"
 import Link from "next/link"
+import { getStoreUrl } from "@/lib/utils"
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd"
 
 const THEME_COLORS = [
     { label: "Teal", value: "#0d9488" },
@@ -26,10 +29,11 @@ const THEME_COLORS = [
 interface StoreSettings {
     store_tagline: string
     theme_color: string
-    banner_image: string
+    banner_images: string[]
     banner_title: string
     banner_subtitle: string
     banner_cta: string
+    banner_slider_speed: number
     delivery_inside: number
     delivery_outside: number
 }
@@ -37,10 +41,11 @@ interface StoreSettings {
 const DEFAULT: StoreSettings = {
     store_tagline: "Best quality products with fast delivery across Bangladesh! 🇧🇩",
     theme_color: "#0d9488",
-    banner_image: "",
+    banner_images: [],
     banner_title: "New Arrivals 🔥",
     banner_subtitle: "Free delivery on orders above ৳999. Shop the latest collection.",
     banner_cta: "Shop Now",
+    banner_slider_speed: 3,
     delivery_inside: 60,
     delivery_outside: 120,
 }
@@ -53,6 +58,7 @@ export default function StoreBuilderPage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [uploadingBanner, setUploadingBanner] = useState(false)
+    const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("mobile")
 
     useEffect(() => {
         async function load() {
@@ -78,7 +84,7 @@ export default function StoreBuilderPage() {
         load()
     }, [])
 
-    const update = (k: keyof StoreSettings, v: string | number) =>
+    const update = (k: keyof StoreSettings, v: string | number | string[]) =>
         setSettings(s => ({ ...s, [k]: v }))
 
     const handleSave = async () => {
@@ -101,22 +107,40 @@ export default function StoreBuilderPage() {
     }
 
     const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
+        const files = Array.from(e.target.files || [])
+        if (files.length === 0) return
         setUploadingBanner(true)
         try {
-            const ext = file.name.split('.').pop()
-            const fileName = `banner-${Date.now()}.${ext}`
-            const { data, error } = await supabase.storage.from("product-images").upload(`banners/${fileName}`, file, { cacheControl: "3600", upsert: false })
-            if (error) throw error
-            const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(data.path)
-            update("banner_image", publicUrl)
-            toast.success("Banner uploaded")
+            const uploadedUrls: string[] = []
+            for (const file of files) {
+                const ext = file.name.split('.').pop()
+                const fileName = `banner-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+                const { data, error } = await supabase.storage.from("product-images").upload(`banners/${fileName}`, file, { cacheControl: "3600", upsert: false })
+                if (error) throw error
+                const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(data.path)
+                uploadedUrls.push(publicUrl)
+            }
+            update("banner_images", [...(settings.banner_images || []), ...uploadedUrls])
+            toast.success(`Successfully uploaded ${files.length} banner(s) ✨`)
         } catch (err: any) {
-            toast.error(err.message || "Failed to upload banner")
+            toast.error(err.message || "Failed to upload banner(s)")
         } finally {
             setUploadingBanner(false)
         }
+    }
+
+    const onDragEnd = (result: DropResult) => {
+        if (!result.destination) return
+        const sourceIndex = result.source.index
+        const destinationIndex = result.destination.index
+
+        if (sourceIndex === destinationIndex) return
+
+        const currentImages = Array.from(settings.banner_images || [])
+        const [reorderedItem] = currentImages.splice(sourceIndex, 1)
+        currentImages.splice(destinationIndex, 0, reorderedItem)
+
+        update("banner_images", currentImages)
     }
 
     if (loading) {
@@ -139,11 +163,11 @@ export default function StoreBuilderPage() {
                 </div>
                 <div className="flex gap-2">
                     {sellerSlug && (
-                        <Link href={`/store/${sellerSlug}`} target="_blank">
+                        <a href={getStoreUrl(sellerSlug)} target="_blank" rel="noopener noreferrer">
                             <Button variant="outline" className="rounded-xl gap-2">
                                 <ExternalLink className="h-4 w-4" /> Preview Store
                             </Button>
-                        </Link>
+                        </a>
                     )}
                     <Button onClick={handleSave} disabled={saving} className="bg-teal-600 hover:bg-teal-700 text-white rounded-xl gap-2">
                         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -236,19 +260,74 @@ export default function StoreBuilderPage() {
                                     <ImageIcon className="h-3.5 w-3.5" /> Banner Image
                                 </Label>
                                 <div className="flex flex-col gap-4">
-                                    {settings.banner_image && (
-                                        <div className="relative w-full aspect-[21/9] rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
-                                            <img src={settings.banner_image} alt="Banner Preview" className="absolute inset-0 w-full h-full object-cover" />
-                                            <Button size="sm" variant="destructive" className="absolute top-2 right-2" onClick={() => update("banner_image", "")}>Remove</Button>
-                                        </div>
+                                    {settings.banner_images && settings.banner_images.length > 0 && (
+                                        <DragDropContext onDragEnd={onDragEnd}>
+                                            <Droppable droppableId="banner-images" direction="vertical">
+                                                {(provided) => (
+                                                    <div {...provided.droppableProps} ref={provided.innerRef} className="flex flex-col gap-3">
+                                                        {settings.banner_images.map((img, idx) => (
+                                                            <Draggable key={img} draggableId={img} index={idx}>
+                                                                {(provided, snapshot) => (
+                                                                    <div
+                                                                        ref={provided.innerRef}
+                                                                        {...provided.draggableProps}
+                                                                        className={`relative w-full h-24 sm:h-32 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800 border-2 transition-all flex items-center group ${snapshot.isDragging ? "border-teal-500 shadow-xl scale-[1.02] z-50" : "border-neutral-200 dark:border-neutral-700"}`}
+                                                                    >
+                                                                        <div
+                                                                            {...provided.dragHandleProps}
+                                                                            className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-white/80 dark:bg-black/60 rounded-md backdrop-blur-sm cursor-grab active:cursor-grabbing text-neutral-600 dark:text-neutral-300 z-20 shadow-sm opacity-50 group-hover:opacity-100 transition-opacity"
+                                                                        >
+                                                                            <GripVertical className="h-4 w-4" />
+                                                                        </div>
+                                                                        <img src={img} alt={`Banner ${idx + 1}`} className="w-full h-full object-cover" />
+                                                                        <Button
+                                                                            size="icon"
+                                                                            variant="destructive"
+                                                                            className="absolute top-2 right-2 h-7 w-7 sm:h-8 sm:w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                            onClick={() => update("banner_images", settings.banner_images.filter((_, i) => i !== idx))}
+                                                                        >
+                                                                            <X className="h-4 w-4" />
+                                                                        </Button>
+                                                                        <div className="absolute bottom-2 left-10 py-0.5 px-2 bg-black/60 backdrop-blur-md rounded text-[10px] text-white font-medium z-10">
+                                                                            Slide {idx + 1}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </Draggable>
+                                                        ))}
+                                                        {provided.placeholder}
+                                                    </div>
+                                                )}
+                                            </Droppable>
+                                        </DragDropContext>
                                     )}
                                     <div className="flex items-center gap-2">
-                                        <Button type="button" variant="outline" className="relative h-11 px-4 rounded-xl cursor-pointer" disabled={uploadingBanner}>
-                                            <input type="file" accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleBannerUpload} disabled={uploadingBanner} />
+                                        <Button type="button" variant="outline" className="relative h-11 px-4 rounded-xl cursor-pointer bg-neutral-50 dark:bg-neutral-900 border-dashed border-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full sm:w-auto" disabled={uploadingBanner}>
+                                            <input type="file" multiple accept="image/*" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onChange={handleBannerUpload} disabled={uploadingBanner} />
                                             {uploadingBanner ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
-                                            {uploadingBanner ? "Uploading..." : settings.banner_image ? "Change Image" : "Upload Banner Image"}
+                                            {uploadingBanner ? "Uploading..." : "Upload New Banner Image"}
                                         </Button>
                                     </div>
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+                                        <p>Upload multiple images to create a sliding hero banner.</p>
+                                    </div>
+                                    {settings.banner_images && settings.banner_images.length > 1 && (
+                                        <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 space-y-2 mt-2">
+                                            <div className="flex justify-between items-center">
+                                                <Label className="font-semibold text-sm">Auto-Slide Speed (Seconds)</Label>
+                                                <span className="text-xs font-bold px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg">{settings.banner_slider_speed || 3}s</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="2"
+                                                max="15"
+                                                step="1"
+                                                value={settings.banner_slider_speed || 3}
+                                                onChange={e => update("banner_slider_speed", Number(e.target.value))}
+                                                className="w-full accent-teal-600"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -321,13 +400,28 @@ export default function StoreBuilderPage() {
                 <div className="space-y-4">
                     <Card className="rounded-2xl border-neutral-200 dark:border-neutral-800 sticky top-6">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm flex items-center gap-2">
-                                <Eye className="h-4 w-4 text-teal-600" /> Live Preview
-                            </CardTitle>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-sm flex items-center gap-2">
+                                    <Eye className="h-4 w-4 text-teal-600" /> Live Preview
+                                </CardTitle>
+                                <div className="flex bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5">
+                                    <button onClick={() => setPreviewDevice("mobile")} className={`p-1.5 rounded-md transition-colors ${previewDevice === "mobile" ? "bg-white dark:bg-neutral-700 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                                        <Smartphone className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button onClick={() => setPreviewDevice("tablet")} className={`p-1.5 rounded-md transition-colors ${previewDevice === "tablet" ? "bg-white dark:bg-neutral-700 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                                        <Tablet className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button onClick={() => setPreviewDevice("desktop")} className={`p-1.5 rounded-md transition-colors ${previewDevice === "desktop" ? "bg-white dark:bg-neutral-700 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+                                        <Monitor className="h-3.5 w-3.5" />
+                                    </button>
+                                </div>
+                            </div>
                         </CardHeader>
-                        <CardContent className="p-3">
+                        <CardContent className="p-3 flex justify-center bg-neutral-50/50 dark:bg-neutral-900/20 rounded-b-2xl">
                             {/* Mini storefront preview */}
-                            <div className="rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                            <div className={`rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 shadow-sm transition-all duration-500 ease-in-out bg-white dark:bg-[#0a0a0a] ${previewDevice === "mobile" ? "w-[280px]" :
+                                previewDevice === "tablet" ? "w-[400px]" : "w-full"
+                                }`}>
                                 {/* Header row */}
                                 <div className="bg-white dark:bg-neutral-900 px-3 py-2 flex items-center justify-between border-b">
                                     <span className="text-xs font-extrabold" style={{ color: bgColor }}>
@@ -342,14 +436,14 @@ export default function StoreBuilderPage() {
                                 <div
                                     className="relative h-28 flex flex-col items-start justify-end p-3"
                                     style={{
-                                        backgroundImage: settings.banner_image ? `url(${settings.banner_image})` : undefined,
+                                        backgroundImage: settings.banner_images?.[0] ? `url(${settings.banner_images[0]})` : undefined,
                                         backgroundSize: "cover",
                                         backgroundPosition: "center",
-                                        backgroundColor: settings.banner_image ? undefined : bgColor,
-                                        background: settings.banner_image ? undefined : `linear-gradient(135deg, ${bgColor}, ${bgColor}cc)`,
+                                        backgroundColor: settings.banner_images?.[0] ? undefined : bgColor,
+                                        background: settings.banner_images?.[0] ? undefined : `linear-gradient(135deg, ${bgColor}, ${bgColor}cc)`,
                                     }}
                                 >
-                                    {!settings.banner_image && (
+                                    {!settings.banner_images?.[0] && (
                                         <div className="absolute inset-0 opacity-20">
                                             <div className="absolute top-2 right-2 h-16 w-16 rounded-full bg-white blur-2xl" />
                                         </div>
@@ -387,11 +481,11 @@ export default function StoreBuilderPage() {
                             <Separator className="my-3" />
 
                             {sellerSlug && (
-                                <Link href={`/store/${sellerSlug}`} target="_blank">
+                                <a href={getStoreUrl(sellerSlug)} target="_blank" rel="noopener noreferrer">
                                     <Button variant="outline" size="sm" className="w-full rounded-xl text-xs gap-1.5">
                                         <ExternalLink className="h-3.5 w-3.5" /> Open Live Store
                                     </Button>
-                                </Link>
+                                </a>
                             )}
                         </CardContent>
                     </Card>

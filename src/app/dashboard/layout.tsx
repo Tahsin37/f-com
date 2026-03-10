@@ -6,26 +6,42 @@ import { usePathname, useRouter } from "next/navigation"
 import {
     LayoutDashboard, Package, Settings, ShoppingCart,
     Menu, X, ChevronRight, Users, Truck, BarChart3, ClipboardList, UserPlus, LogOut, Loader2, Store,
-    Megaphone, Palette, Globe, Ticket
+    Megaphone, Palette, Globe, Ticket, Sparkles, ChevronDown, Star
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/f-manager/ThemeToggle"
 import { supabase } from "@/lib/supabase"
 import type { User } from "@supabase/supabase-js"
 
-const NAV_ITEMS = [
+interface NavItem {
+    href: string
+    label: string
+    icon: any
+    children?: { href: string; label: string; icon: any }[]
+}
+
+const NAV_ITEMS: NavItem[] = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/store", label: "My Store", icon: Store },
     { href: "/dashboard/quick-sell", label: "Quick Sell (POS)", icon: ShoppingCart },
     { href: "/dashboard/orders", label: "Orders", icon: ClipboardList },
     { href: "/dashboard/products", label: "Products", icon: Package },
+    { href: "/dashboard/reviews", label: "Reviews", icon: Star },
     { href: "/dashboard#customers", label: "Customers", icon: Users },
     { href: "/dashboard#courier", label: "Courier Log", icon: Truck },
     { href: "/dashboard#analytics", label: "Analytics", icon: BarChart3 },
     { href: "/dashboard/workers", label: "Workers", icon: UserPlus },
     { href: "/dashboard/campaigns", label: "Campaigns", icon: Megaphone },
     { href: "/dashboard/coupons", label: "Coupons", icon: Ticket },
-    { href: "/dashboard/theme", label: "Theme Editor", icon: Palette },
+    {
+        href: "#themes",
+        label: "Themes",
+        icon: Sparkles,
+        children: [
+            { href: "/dashboard/theme-manager", label: "Theme Studio", icon: Sparkles },
+            { href: "/dashboard/theme", label: "Theme Editor", icon: Palette },
+        ]
+    },
     { href: "/dashboard/domains", label: "Domains", icon: Globe },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ]
@@ -39,6 +55,9 @@ interface SidebarProps {
 
 function Sidebar({ onClose, user, sellerName, onSignOut }: SidebarProps) {
     const pathname = usePathname()
+    const [themeOpen, setThemeOpen] = useState(
+        pathname.startsWith("/dashboard/theme")
+    )
     const initials = sellerName ? sellerName[0].toUpperCase() : "S"
 
     return (
@@ -61,6 +80,49 @@ function Sidebar({ onClose, user, sellerName, onSignOut }: SidebarProps) {
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto p-3 space-y-0.5 mt-1">
                 {NAV_ITEMS.map((item) => {
+                    // ── Dropdown item ──
+                    if (item.children) {
+                        const isChildActive = item.children.some(c =>
+                            pathname === c.href || pathname.startsWith(c.href)
+                        )
+                        return (
+                            <div key={item.label}>
+                                <button
+                                    onClick={() => setThemeOpen(!themeOpen)}
+                                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${isChildActive
+                                        ? "bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300"
+                                        : "text-muted-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-foreground"
+                                        }`}
+                                >
+                                    <item.icon className="h-[18px] w-[18px] shrink-0" />
+                                    {item.label}
+                                    <ChevronDown className={`h-3.5 w-3.5 ml-auto transition-transform duration-200 ${themeOpen ? "rotate-180" : ""}`} />
+                                </button>
+                                <div className={`overflow-hidden transition-all duration-200 ${themeOpen ? "max-h-40 opacity-100 mt-0.5" : "max-h-0 opacity-0"}`}>
+                                    {item.children.map(child => {
+                                        const childActive = pathname === child.href || pathname.startsWith(child.href)
+                                        return (
+                                            <Link
+                                                key={child.href}
+                                                href={child.href}
+                                                onClick={onClose}
+                                                className={`flex items-center gap-3 pl-11 pr-4 py-2 rounded-xl text-[13px] font-medium transition-all ${childActive
+                                                    ? "bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300"
+                                                    : "text-muted-foreground hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-foreground"
+                                                    }`}
+                                            >
+                                                <child.icon className="h-4 w-4 shrink-0" />
+                                                {child.label}
+                                                {childActive && <ChevronRight className="h-3 w-3 ml-auto" />}
+                                            </Link>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )
+                    }
+
+                    // ── Normal item ──
                     const isOverview = item.href === "/dashboard" && pathname === "/dashboard"
                     const isExact = !item.href.includes("#") && (pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href)))
                     const active = isOverview || isExact

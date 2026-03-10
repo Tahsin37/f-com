@@ -37,27 +37,39 @@ export function StorePageSkeleton() {
             </div>
 
             {/* Trust badges */}
-            <div className="grid grid-cols-3 gap-3 px-4 mt-6 max-w-7xl mx-auto">
-                {[1, 2, 3].map(i => (
-                    <SkeletonPulse key={i} className="h-14 rounded-xl" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-4 mt-6 max-w-7xl mx-auto">
+                {[1, 2, 3, 4].map(i => (
+                    <SkeletonPulse key={i} className="h-16 rounded-2xl" />
                 ))}
             </div>
 
+            {/* Category Grid */}
+            <div className="px-4 mt-12 max-w-7xl mx-auto">
+                <div className="flex justify-between mb-6">
+                    <SkeletonPulse className="h-8 w-40" />
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+                    {[1, 2, 3, 4].map(i => (
+                        <SkeletonPulse key={i} className={`rounded-[2rem] ${i === 0 || i === 3 ? 'aspect-square md:aspect-[4/5]' : 'aspect-square md:aspect-[4/5]'}`} />
+                    ))}
+                </div>
+            </div>
+
             {/* Product grid */}
-            <div className="px-4 mt-8 max-w-7xl mx-auto">
+            <div className="px-4 mt-12 max-w-7xl mx-auto">
                 <div className="flex justify-between mb-4">
                     <SkeletonPulse className="h-6 w-32" />
                     <SkeletonPulse className="h-8 w-28 rounded-lg" />
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                     {Array.from({ length: 10 }).map((_, i) => (
-                        <div key={i} className="rounded-xl border border-neutral-100 dark:border-neutral-800 overflow-hidden">
-                            <SkeletonPulse className="aspect-square rounded-none" />
-                            <div className="p-3 space-y-2">
+                        <div key={i} className="rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50 overflow-hidden">
+                            <SkeletonPulse className="aspect-[4/5] rounded-none" />
+                            <div className="p-4 space-y-3">
                                 <SkeletonPulse className="h-3 w-12" />
                                 <SkeletonPulse className="h-4 w-full" />
                                 <SkeletonPulse className="h-3 w-16" />
-                                <SkeletonPulse className="h-4 w-20" />
+                                <SkeletonPulse className="h-5 w-24" />
                             </div>
                         </div>
                     ))}
